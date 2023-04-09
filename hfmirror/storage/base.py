@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 
 class BaseStorage:
@@ -11,5 +11,5 @@ class BaseStorage:
     def read_text(self, file: List[str]) -> str:
         raise NotImplementedError
 
-    def batch_change_files(self, changes: List[Optional[str], List[str]]):
+    def batch_change_files(self, changes: List[Tuple[Optional[str], List[str]]]):
         raise NotImplementedError

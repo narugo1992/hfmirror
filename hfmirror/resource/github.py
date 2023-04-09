@@ -1,15 +1,11 @@
-import os
 import re
-import tempfile
-from contextlib import contextmanager
-from functools import partial
-from typing import Tuple, Optional, Mapping, List, Any, Union
+from typing import Tuple, Optional, Mapping, Any, Union, Iterable
 
 from github import Github
 from github.GitRelease import GitRelease
 from tqdm.auto import tqdm
 
-from .base import SyncResource
+from .resource import SyncResource, _TargetPathType
 
 
 def _to_int(v: Union[str, int]) -> Union[str, int]:
@@ -32,9 +28,22 @@ class GithubReleaseResource(SyncResource):
         _ = tag
         return filename
 
-    def sync(self) -> Tuple[List[Tuple[str, str, Mapping]], Mapping]:
+    __version_pattern__ = r'^(v\.|v)?(?P<version>[\d.]+)$'
+    __version_file_prefix__ = 'LATEST_RELEASE'
+
+    def _version_to_tuple(self, version):
+        matching = re.fullmatch(self.__version_pattern__, version)
+        if matching:
+            version_text = matching.group('version')
+            return tuple(map(_to_int, version_text.split('.')))
+        else:
+            raise ValueError(f'Invalid version for release - {version!r}.')
+
+    def grab(self) -> Iterable[Union[
+        Tuple[str, Any, _TargetPathType, Mapping],
+        Tuple[str, Any, _TargetPathType],
+    ]]:
         repo = self.github_client.get_repo(self.repo)
-        retval = []
         versions = []
         repo_tqdm = tqdm(repo.get_releases())
         for release in repo_tqdm:
@@ -45,35 +54,17 @@ class GithubReleaseResource(SyncResource):
                 continue
 
             versions.append(tag_name)
+            yield 'metadata', {'version': release.tag_name}, tag_name
             for asset in release.get_assets():
                 filename = self._filename_filter(tag_name, asset.name)
                 if not filename:
                     continue
 
                 download_url = asset.browser_download_url
-                retval.append((
-                    download_url,
-                    f'{tag_name}/{filename}',
-                    {'tag': release.tag_name, 'filename': asset.name}
-                ))
+                metadata = {'tag': release.tag_name, 'filename': asset.name}
+                yield 'remote', download_url, f'{tag_name}/{filename}', metadata
 
-        return retval, {'versions': versions}
-
-    __version_pattern__ = r'^(v\.|v)?(?P<version>[\d.]+)$'
-
-    def _version_to_tuple(self, version):
-        matching = re.fullmatch(self.__version_pattern__, version)
-        if matching:
-            version_text = matching.group('version')
-            return tuple(map(_to_int, version_text.split('.')))
-        else:
-            raise ValueError(f'Invalid version for release - {version!r}.')
-
-    __version_file_prefix__ = 'LATEST_RELEASE'
-
-    def custom(self, metadata) -> List[Tuple[Any, str, Mapping]]:
         if self.add_version_attachment:
-            versions = metadata['versions']
             version_map = {}
             for version in versions:
                 _tuple = self._version_to_tuple(version)
@@ -86,28 +77,9 @@ class GithubReleaseResource(SyncResource):
                     else:
                         version_map[_part_tuple] = (_tuple, version)
 
-            @contextmanager
-            def _get_file_with_content(content):
-                with tempfile.TemporaryDirectory() as d:
-                    filename = os.path.join(d, 'file')
-                    with open(filename, 'w') as f:
-                        f.write(content)
-
-                    yield filename
-
-            retval = []
             for tuple_, (_, version) in version_map.items():
                 if tuple_:
                     schema_file = f'{self.__version_file_prefix__}_{".".join(map(str, tuple_))}'
                 else:
                     schema_file = self.__version_file_prefix__
-                retval.append((
-                    partial(_get_file_with_content, version),
-                    schema_file,
-                    {}
-                ))
-
-            return retval
-
-        else:
-            return []
+                yield 'text', version, schema_file

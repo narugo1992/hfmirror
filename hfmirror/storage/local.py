@@ -1,9 +1,10 @@
 import os.path
 import pathlib
 import shutil
-import tempfile
 from contextlib import contextmanager
-from typing import List, Optional
+from typing import List, Optional, Tuple
+
+from hbutils.system.filesystem.tempfile import TemporaryDirectory
 
 from .base import BaseStorage
 
@@ -26,7 +27,7 @@ class LocalStorage(BaseStorage):
 
     @contextmanager
     def recover_state_when_failed(self, state: List[List[str]]):
-        with tempfile.TemporaryDirectory() as td:
+        with TemporaryDirectory() as td:
             # record all the files
             records = []
             for i, file_in_storage in enumerate(state):
@@ -49,11 +50,14 @@ class LocalStorage(BaseStorage):
                         if os.path.exists(file_in_storage):
                             os.remove(file_in_storage)
                     else:
+                        directory = os.path.dirname(file_in_storage)
+                        if directory:
+                            os.makedirs(directory, exist_ok=True)
                         shutil.copyfile(file_in_temp, file_in_storage)
 
                 raise
 
-    def batch_change_files(self, changes: List[Optional[str], List[str]]):
+    def batch_change_files(self, changes: List[Tuple[Optional[str], List[str]]]):
         states = [file_in_storage for _, file_in_storage in changes]
         with self.recover_state_when_failed(states):
             for local_file, file_in_storage in changes:
@@ -62,4 +66,7 @@ class LocalStorage(BaseStorage):
                     if os.path.exists(file_in_storage):
                         os.remove(file_in_storage)
                 else:
+                    directory = os.path.dirname(file_in_storage)
+                    if directory:
+                        os.makedirs(directory, exist_ok=True)
                     shutil.copyfile(local_file, file_in_storage)

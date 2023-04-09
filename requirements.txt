@@ -1,4 +1,4 @@
-hbutils>=0.8.3
+hbutils>=0.8.5
 tqdm>=4.0.0
 click>=7.0.0
 requests

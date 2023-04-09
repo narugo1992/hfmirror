@@ -1,48 +1,72 @@
 import os.path
-import tempfile
+import time
 from contextlib import contextmanager
 from email.utils import parsedate_to_datetime
-from typing import List, Mapping, ContextManager, Optional
+from typing import List, ContextManager, Optional, Type, Any, Dict
 
+import requests
 from hbutils.string import truncate
+from hbutils.system.filesystem.tempfile import TemporaryDirectory
 from hbutils.system.network import urlsplit
 
 from ..utils import file_download, srequest, get_requests_session
-
-
-class SyncItem:
-    def __init__(self, data: Mapping, segments: List[str]):
-        self.data = data
-        self.segments = segments
-
-    def load_file(self) -> ContextManager[str]:
-        raise NotImplementedError
 
 
 class ResourceNotChange(Exception):
     pass
 
 
-class RemoteSyncItem(SyncItem):
+class SyncItem:
+    __type__: str = None
 
-    def __init__(self, url, data, segments: List[str]):
-        SyncItem.__init__(self, data, segments)
+    def __init__(self, value, metadata: dict, segments: List[str]):
+        _ = value
+        self.metadata = metadata
+        self.segments = segments
+
+    def load_file(self) -> ContextManager[str]:
+        raise NotImplementedError
+
+    def refresh_mark(self, mark: Optional[Dict[str, Any]]):
+        return mark or {}
+
+
+class RemoteSyncItem(SyncItem):
+    __type__ = 'remote'
+
+    def __init__(self, url, metadata, segments: List[str]):
+        SyncItem.__init__(self, url, metadata, segments)
         self.url = url
+        self._session = None
+
+    def _get_session(self) -> requests.Session:
+        if self._session is None:
+            self._session = get_requests_session()
+
+        return self._session
 
     def _file_process(self, filename):
         pass
 
     @contextmanager
     def load_file(self) -> ContextManager[str]:
-        with tempfile.TemporaryDirectory() as td:
+        with TemporaryDirectory() as td:
             filename = os.path.join(td, urlsplit(self.url).filename or 'unnamed_file')
             file_download(self.url, filename)
             self._file_process(filename)
             yield filename
 
-    def get_etag(self, etag: Optional[str] = None):
-        session = get_requests_session()
-        resp = srequest(session, 'HEAD', self.url, allow_redirects=True, headers={'If-Not-Match': etag} if etag else {})
+    def refresh_mark(self, mark: Optional[Dict[str, Any]]):
+        mark = dict(mark or {})
+        expires = mark.get('expires')
+        if expires is not None and time.time() < expires:
+            raise ResourceNotChange
+
+        etag = mark.get('etag')
+        resp = srequest(
+            self._get_session(), 'HEAD', self.url,
+            allow_redirects=True, headers={'If-None-Match': etag} if etag else {}
+        )
         if resp.status_code == 304:
             raise ResourceNotChange
         else:
@@ -50,8 +74,6 @@ class RemoteSyncItem(SyncItem):
             etag = headers.get('ETag')
             expires = headers.get('Expires')
             expires = parsedate_to_datetime(expires).timestamp() if expires else None
-            date = headers.get('Date')
-            date = parsedate_to_datetime(date).timestamp() if date else None
             content_length = headers.get('Content-Length')
             content_length = int(content_length) if content_length is not None else None
             content_type = headers.get('Content-Type')
@@ -60,7 +82,6 @@ class RemoteSyncItem(SyncItem):
                 'url': self.url,
                 'etag': etag,
                 'expires': expires,
-                'date': date,
                 'content_length': content_length,
                 'content_type': content_type,
             }
@@ -70,8 +91,10 @@ class RemoteSyncItem(SyncItem):
 
 
 class CustomSyncItem(SyncItem):
-    def __init__(self, gene, data, segments):
-        SyncItem.__init__(self, data, segments)
+    __type__ = 'custom'
+
+    def __init__(self, gene, metadata, segments):
+        SyncItem.__init__(self, gene, metadata, segments)
         self.gene = gene
 
     @contextmanager
@@ -83,14 +106,16 @@ class CustomSyncItem(SyncItem):
         return f'<{self.__class__.__name__} gene: {self.gene!r}>'
 
 
-class ContentOutputItem(SyncItem):
-    def __init__(self, content, data, segments):
-        SyncItem.__init__(self, data, segments)
+class TextOutputSyncItem(SyncItem):
+    __type__ = 'text'
+
+    def __init__(self, content, metadata, segments):
+        SyncItem.__init__(self, content, metadata, segments)
         self.content = content
 
     @contextmanager
     def load_file(self) -> ContextManager[str]:
-        with tempfile.TemporaryDirectory() as td:
+        with TemporaryDirectory() as td:
             filename = os.path.join(td, 'file')
             with open(filename, 'w') as f:
                 f.write(self.content)
@@ -99,3 +124,32 @@ class ContentOutputItem(SyncItem):
 
     def __repr__(self):
         return f'<{self.__class__.__name__} content: {truncate(self.content, tail_length=15, show_length=True)!r}>'
+
+
+_PRESERVED_NAMES = {'metadata'}
+_REGISTERED_SYNC_TYPES: Dict[str, Type[SyncItem]] = {}
+
+
+def register_sync_type(clazz: Type[SyncItem]):
+    type_ = clazz.__type__
+    if type_ is None:
+        raise TypeError(f'Sync item class {clazz!r} should have __type__ instead of None.')
+    elif type_ in _PRESERVED_NAMES:
+        raise KeyError(f'Type {type_!r} is preserved, please use another one.')
+    elif type_ in _REGISTERED_SYNC_TYPES:
+        raise KeyError(f'Sync item type {type_!r} already exist.')
+    else:
+        _REGISTERED_SYNC_TYPES[type_] = clazz
+
+
+register_sync_type(RemoteSyncItem)
+register_sync_type(CustomSyncItem)
+register_sync_type(TextOutputSyncItem)
+
+
+def create_sync_item(type_: str, value: Any, metadata: dict, segments: List[str]) -> SyncItem:
+    if type_ in _REGISTERED_SYNC_TYPES:
+        clazz = _REGISTERED_SYNC_TYPES[type_]
+        return clazz(value, metadata, segments)
+    else:
+        raise KeyError(f'Unknown sync item type - {type_!r}.')
