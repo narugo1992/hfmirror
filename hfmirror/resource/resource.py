@@ -8,6 +8,7 @@ from typing import Tuple, List, Mapping, Any, Iterable, Union, Dict
 from hbutils.string.tree import format_tree
 
 from .item import create_sync_item, SyncItem, _PRESERVED_NAMES
+from ..utils import hash_anything
 
 TargetPathType = Union[str, List[str]]
 
@@ -139,6 +140,9 @@ class SyncTree:
 
     def __repr__(self):
         return format_tree(self._data_for_repr(), itemgetter(0), itemgetter(1))
+
+    def __hash__(self):
+        return hash_anything((type(self), self.metadata, self.items))
 
 
 SyncItemType = Union[SyncItem, MetadataItem]

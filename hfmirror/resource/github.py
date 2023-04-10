@@ -1,5 +1,5 @@
 import re
-from typing import Tuple, Optional, Mapping, Any, Union, Iterable
+from typing import Tuple, Mapping, Any, Union, Iterable, Dict
 
 from github import Github
 from github.GitRelease import GitRelease
@@ -15,10 +15,28 @@ def _to_int(v: Union[str, int]) -> Union[str, int]:
         return v
 
 
+def parse_github_object(obj) -> Github:
+    if isinstance(obj, Github):
+        return obj
+    elif obj is None:
+        return Github()
+    elif isinstance(obj, str):
+        return Github(obj)
+    elif isinstance(obj, tuple):
+        return Github(*obj)
+    elif isinstance(obj, dict):
+        return Github(**obj)
+    else:
+        raise TypeError(f'Unknown github object type - {obj!r}.')
+
+
+_GithubType = Union[Github, str, None, Tuple[str, str], Dict]
+
+
 class GithubReleaseResource(SyncResource):
-    def __init__(self, repo: str, access_token: Optional[str] = None, add_version_attachment: bool = True):
+    def __init__(self, repo: str, github: _GithubType = None, add_version_attachment: bool = True):
         self.repo = repo
-        self.github_client = Github(access_token)
+        self.github_client = parse_github_object(github)
         self.add_version_attachment = add_version_attachment
 
     def _tag_filter(self, tag):
@@ -54,7 +72,8 @@ class GithubReleaseResource(SyncResource):
                 continue
 
             versions.append(tag_name)
-            yield 'metadata', {'version': release.tag_name}, tag_name
+            release_metadata = {'version': release.tag_name, 'url': release.html_url}
+            yield 'metadata', release_metadata, tag_name
             for asset in release.get_assets():
                 filename = self._filename_filter(tag_name, asset.name)
                 if not filename:

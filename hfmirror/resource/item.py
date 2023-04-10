@@ -1,3 +1,4 @@
+import abc
 import os.path
 import time
 from contextlib import contextmanager
@@ -9,26 +10,38 @@ from hbutils.string import truncate
 from hbutils.system.filesystem.tempfile import TemporaryDirectory
 from hbutils.system.network import urlsplit
 
-from ..utils import download_file, srequest, get_requests_session
+from ..utils import download_file, srequest, get_requests_session, hash_anything
 
 
 class ResourceNotChange(Exception):
     pass
 
 
-class SyncItem:
+class SyncItem(metaclass=abc.ABCMeta):
     __type__: str = None
 
     def __init__(self, value, metadata: dict, segments: List[str]):
-        _ = value
+        self._value = value
         self.metadata = metadata
         self.segments = segments
 
     def load_file(self) -> ContextManager[str]:
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     def refresh_mark(self, mark: Optional[Dict[str, Any]]):
         return mark or {}
+
+    def __hash__(self):
+        return hash_anything((type(self), self._value, self.metadata, self.segments))
+
+    def __eq__(self, other):
+        if self is other:
+            return True
+        elif isinstance(self, type(other)) and isinstance(other, type(self)):
+            return (self._value, self.metadata, self.segments) == \
+                   (other._value, other.metadata, other.segments)
+        else:
+            return False
 
 
 class RemoteSyncItem(SyncItem):

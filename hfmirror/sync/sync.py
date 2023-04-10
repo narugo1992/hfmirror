@@ -26,11 +26,10 @@ def _count_trees(tree: SyncTree):
 
 
 class SyncTask:
-    __meta_filename__ = '.meta.json'
-
-    def __init__(self, resource: SyncResource, storage: BaseStorage):
+    def __init__(self, resource: SyncResource, storage: BaseStorage, meta_filename='.meta.json'):
         self.resource = resource
         self.storage = storage
+        self.meta_filename = meta_filename
 
     def _sync_tree(self, tree: SyncTree, segments: List[str], tqdms: Tuple[_TqdmType, _TqdmType]):
         tree_tqdm, file_tqdm = tqdms
@@ -43,7 +42,7 @@ class SyncTask:
             else:
                 items.append((key, value))
 
-        meta_file_segments = [*segments, self.__meta_filename__]
+        meta_file_segments = [*segments, self.meta_filename]
         if self.storage.file_exists(meta_file_segments):
             old_metadata = json.loads(self.storage.read_text(meta_file_segments))
             old_files = {item['name']: item for item in old_metadata['files']}
@@ -84,7 +83,7 @@ class SyncTask:
             })
 
         with TemporaryDirectory() as td:
-            local_metafile = os.path.join(td, self.__meta_filename__)
+            local_metafile = os.path.join(td, self.meta_filename)
             with open(local_metafile, 'w') as f:
                 json.dump({
                     'path': '/'.join(segments),
@@ -94,7 +93,7 @@ class SyncTask:
                 }, f, indent=4, ensure_ascii=False)
 
             with nested_with(*[item.load_file() for _, item in need_load_files]) as file_paths:
-                changes = [(local_metafile, [*segments, self.__meta_filename__])]
+                changes = [(local_metafile, [*segments, self.meta_filename])]
                 for local_file, (key, _) in zip(file_paths, need_load_files):
                     changes.append((local_file, [*segments, key]))
 
