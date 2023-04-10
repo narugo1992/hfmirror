@@ -9,7 +9,7 @@ from hbutils.string import truncate
 from hbutils.system.filesystem.tempfile import TemporaryDirectory
 from hbutils.system.network import urlsplit
 
-from ..utils import file_download, srequest, get_requests_session
+from ..utils import download_file, srequest, get_requests_session
 
 
 class ResourceNotChange(Exception):
@@ -52,39 +52,47 @@ class RemoteSyncItem(SyncItem):
     def load_file(self) -> ContextManager[str]:
         with TemporaryDirectory() as td:
             filename = os.path.join(td, urlsplit(self.url).filename or 'unnamed_file')
-            file_download(self.url, filename)
+            download_file(self.url, filename)
             self._file_process(filename)
             yield filename
 
     def refresh_mark(self, mark: Optional[Dict[str, Any]]):
         mark = dict(mark or {})
-        expires = mark.get('expires')
-        if expires is not None and time.time() < expires:
-            raise ResourceNotChange
+        url = mark.get('url')
+        if url == self.url:  # url not changed
+            expires = mark.get('expires')
+            if expires is not None and time.time() < expires:
+                raise ResourceNotChange
 
-        etag = mark.get('etag')
-        resp = srequest(
-            self._get_session(), 'HEAD', self.url,
-            allow_redirects=True, headers={'If-None-Match': etag} if etag else {}
-        )
+            etag = mark.get('etag')
+            resp = srequest(
+                self._get_session(), 'HEAD', self.url,
+                allow_redirects=True, headers={'If-None-Match': etag} if etag else {}
+            )
+        else:
+            resp = srequest(
+                self._get_session(), 'HEAD', self.url,
+                allow_redirects=True, headers={}
+            )
+
         if resp.status_code == 304:
             raise ResourceNotChange
-        else:
-            headers = resp.headers
-            etag = headers.get('ETag')
-            expires = headers.get('Expires')
-            expires = parsedate_to_datetime(expires).timestamp() if expires else None
-            content_length = headers.get('Content-Length')
-            content_length = int(content_length) if content_length is not None else None
-            content_type = headers.get('Content-Type')
 
-            return {
-                'url': self.url,
-                'etag': etag,
-                'expires': expires,
-                'content_length': content_length,
-                'content_type': content_type,
-            }
+        headers = resp.headers
+        etag = headers.get('ETag')
+        expires = headers.get('Expires')
+        expires = parsedate_to_datetime(expires).timestamp() if expires else None
+        content_length = headers.get('Content-Length')
+        content_length = int(content_length) if content_length is not None else None
+        content_type = headers.get('Content-Type')
+
+        return {
+            'url': self.url,
+            'etag': etag,
+            'expires': expires,
+            'content_length': content_length,
+            'content_type': content_type,
+        }
 
     def __repr__(self):
         return f'<{self.__class__.__name__} url: {self.url!r}>'

@@ -1,2 +1,2 @@
-from .download import file_download
+from .download import download_file
 from .session import get_requests_session, srequest

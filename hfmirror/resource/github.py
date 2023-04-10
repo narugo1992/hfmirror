@@ -5,7 +5,7 @@ from github import Github
 from github.GitRelease import GitRelease
 from tqdm.auto import tqdm
 
-from .resource import SyncResource, _TargetPathType
+from .resource import SyncResource, TargetPathType
 
 
 def _to_int(v: Union[str, int]) -> Union[str, int]:
@@ -28,7 +28,7 @@ class GithubReleaseResource(SyncResource):
         _ = tag
         return filename
 
-    __version_pattern__ = r'^(v\.|v)?(?P<version>[\d.]+)$'
+    __version_pattern__ = r'^([a-zA-Z]+(\.|-)?)?(?P<version>[\d.]+)$'
     __version_file_prefix__ = 'LATEST_RELEASE'
 
     def _version_to_tuple(self, version):
@@ -40,8 +40,8 @@ class GithubReleaseResource(SyncResource):
             raise ValueError(f'Invalid version for release - {version!r}.')
 
     def grab(self) -> Iterable[Union[
-        Tuple[str, Any, _TargetPathType, Mapping],
-        Tuple[str, Any, _TargetPathType],
+        Tuple[str, Any, TargetPathType, Mapping],
+        Tuple[str, Any, TargetPathType],
     ]]:
         repo = self.github_client.get_repo(self.repo)
         versions = []

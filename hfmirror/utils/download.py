@@ -4,7 +4,7 @@ import requests
 from tqdm.auto import tqdm
 
 
-def file_download(url, filename, expected_size: int = None, desc=None):
+def download_file(url, filename, expected_size: int = None, desc=None):
     response = requests.get(url, stream=True, allow_redirects=True)
     response.raise_for_status()
     expected_size = expected_size or response.headers.get('Content-Length', None)

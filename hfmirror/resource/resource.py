@@ -9,10 +9,10 @@ from hbutils.string.tree import format_tree
 
 from .item import create_sync_item, SyncItem, _PRESERVED_NAMES
 
-_TargetPathType = Union[str, List[str]]
+TargetPathType = Union[str, List[str]]
 
 
-def _split_path_to_segments(path: _TargetPathType) -> List[str]:
+def _split_path_to_segments(path: TargetPathType) -> List[str]:
     if isinstance(path, (list, tuple)):
         return list(path)
     else:
@@ -146,8 +146,8 @@ SyncItemType = Union[SyncItem, MetadataItem]
 
 class SyncResource:
     def grab(self) -> Iterable[Union[
-        Tuple[str, Any, _TargetPathType, Mapping],
-        Tuple[str, Any, _TargetPathType],
+        Tuple[str, Any, TargetPathType, Mapping],
+        Tuple[str, Any, TargetPathType],
     ]]:
         raise NotImplementedError
 

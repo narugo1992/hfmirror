@@ -1,4 +1,3 @@
-import random
 import time
 from typing import Optional, Dict
 
@@ -47,9 +46,6 @@ def get_requests_session(max_retries: int = 5, timeout: int = DEFAULT_TIMEOUT,
 
 def srequest(session: requests.Session, method, url, *, max_retries: int = 5,
              sleep_time: float = 5.0, raise_for_status: bool = True, **kwargs) -> requests.Response:
-    if isinstance(session, (list, tuple)):
-        session = random.choice(session)
-
     resp = None
     for _ in range(max_retries):
         try:
