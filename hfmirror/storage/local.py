@@ -21,9 +21,9 @@ class LocalStorage(BaseStorage):
         file = self.path_join(*file)
         return os.path.exists(file) and os.path.isfile(file)
 
-    def read_text(self, file: List[str]) -> str:
+    def read_text(self, file: List[str], encoding: str = 'utf-8') -> str:
         file = self.path_join(*file)
-        return pathlib.Path(file).read_text()
+        return pathlib.Path(file).read_text(encoding=encoding)
 
     @contextmanager
     def recover_state_when_failed(self, state: List[List[str]]):
