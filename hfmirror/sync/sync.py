@@ -84,7 +84,7 @@ class SyncTask:
 
         with TemporaryDirectory() as td:
             local_metafile = os.path.join(td, self.meta_filename)
-            with open(local_metafile, 'w') as f:
+            with open(local_metafile, 'w', encoding='utf-8') as f:
                 json.dump({
                     'path': '/'.join(segments),
                     'metadata': tree.metadata,
