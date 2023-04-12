@@ -3,13 +3,13 @@ from typing import List, Optional, Tuple
 
 class BaseStorage:
     def path_join(self, path, *segments):
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     def file_exists(self, file: List[str]) -> bool:
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     def read_text(self, file: List[str]) -> str:
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     def batch_change_files(self, changes: List[Tuple[Optional[str], List[str]]]):
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
