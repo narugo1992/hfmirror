@@ -1,6 +1,7 @@
 .PHONY: docs test unittest resource
 
-PYTHON := $(shell which python)
+PYTHON ?= $(shell which python)
+PYTEST ?= $(PYTHON) -X utf-8 -m pytest
 
 PROJ_DIR      := .
 DOC_DIR       := ${PROJ_DIR}/docs
@@ -27,7 +28,7 @@ test: unittest
 
 unittest:
 	UNITTEST=1 \
-		pytest "${RANGE_TEST_DIR}" \
+		$(PYTEST) "${RANGE_TEST_DIR}" \
 		-sv -m unittest \
 		$(shell for type in ${COV_TYPES}; do echo "--cov-report=$$type"; done) \
 		--cov="${RANGE_SRC_DIR}" \
