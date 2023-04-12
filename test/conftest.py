@@ -29,5 +29,10 @@ def url_to_game_character_skins():
 
 
 @pytest.fixture(scope='session')
-def github_client() -> Github:
-    yield Github(os.environ.get('GITHUB_ACCESS_TOKEN'))
+def github_access_token():
+    return os.environ.get('GH_ACCESS_TOKEN')
+
+
+@pytest.fixture(scope='session')
+def github_client(github_access_token) -> Github:
+    yield Github(github_access_token)
