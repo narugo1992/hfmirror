@@ -2,17 +2,18 @@ import os.path
 import pathlib
 import shutil
 from contextlib import contextmanager
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 from hbutils.system.filesystem.tempfile import TemporaryDirectory
 
 from .base import BaseStorage
+from ..utils import to_segments
 
 
 class LocalStorage(BaseStorage):
-    def __init__(self, root_directory, namespace: List[str] = None):
+    def __init__(self, root_directory, namespace: Union[List[str], str, None] = None):
         self.root_directory = root_directory
-        self.namespace = list(namespace or [])
+        self.namespace = to_segments(namespace or [])
 
     def path_join(self, path, *segments):
         return os.path.join(self.root_directory, *self.namespace, path, *segments)

@@ -3,3 +3,4 @@ tqdm>=4.0.0
 click>=7.0.0
 requests
 pygithub
+huggingface_hub
