@@ -97,6 +97,7 @@ jobs:
       - name: Run unittest
         env:
           CI: 'true'
+          GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
         shell: bash
         run: |
           make unittest IS_WIN=${{ env.IS_WIN }} IS_MAC=${{ env.IS_MAC }}
