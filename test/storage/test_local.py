@@ -47,9 +47,12 @@ class TestStorageLocal:
         assert isolated_storage.file_exists(['2', 'f.txt'])
         assert isolated_storage.file_exists(['2', 'f2.txt'])
         assert not isolated_storage.file_exists(['2', 'fx.txt'])
-        assert isolated_storage.read_text(['f.txt']) == pathlib.Path('example_text.txt').read_text()
-        assert isolated_storage.read_text(['2', 'f.txt']) == pathlib.Path('example_text.txt').read_text()
-        assert isolated_storage.read_text(['2', 'f2.txt']) == pathlib.Path('.keep').read_text()
+        assert isolated_storage.read_text(['f.txt']) == \
+               pathlib.Path('example_text.txt').read_text(encoding='utf-8')
+        assert isolated_storage.read_text(['2', 'f.txt']) == \
+               pathlib.Path('example_text.txt').read_text(encoding='utf-8')
+        assert isolated_storage.read_text(['2', 'f2.txt']) == \
+               pathlib.Path('.keep').read_text(encoding='utf-8')
 
         isolated_storage.batch_change_files([
             (None, ['2', 'f.txt']),
@@ -67,10 +70,14 @@ class TestStorageLocal:
         assert isolated_storage.file_exists(['2', 'f2.txt'])
         assert isolated_storage.file_exists(['2', 'fx.txt'])
         assert isolated_storage.file_exists(['4', 'root', 'f.txt'])
-        assert isolated_storage.read_text(['f.txt']) == pathlib.Path('example_text.txt').read_text()
-        assert isolated_storage.read_text(['2', 'f2.txt']) == pathlib.Path('example_text.txt').read_text()
-        assert isolated_storage.read_text(['2', 'fx.txt']) == pathlib.Path('.keep').read_text()
-        assert isolated_storage.read_text(['4', 'root', 'f.txt']) == pathlib.Path('example_text.txt').read_text()
+        assert isolated_storage.read_text(['f.txt']) == \
+               pathlib.Path('example_text.txt').read_text(encoding='utf-8')
+        assert isolated_storage.read_text(['2', 'f2.txt']) == \
+               pathlib.Path('example_text.txt').read_text(encoding='utf-8')
+        assert isolated_storage.read_text(['2', 'fx.txt']) == \
+               pathlib.Path('.keep').read_text(encoding='utf-8')
+        assert isolated_storage.read_text(['4', 'root', 'f.txt']) == \
+               pathlib.Path('example_text.txt').read_text(encoding='utf-8')
 
         # make sure the operation is atomic
         # the former operations will be rollback when the later one is failed.
@@ -95,7 +102,11 @@ class TestStorageLocal:
         assert isolated_storage.file_exists(['4', 'root', 'f.txt'])
         assert not isolated_storage.file_exists(['2', 'f2t.txt'])
         assert not isolated_storage.file_exists(['1.txt'])
-        assert isolated_storage.read_text(['f.txt']) == pathlib.Path('example_text.txt').read_text()
-        assert isolated_storage.read_text(['2', 'f2.txt']) == pathlib.Path('example_text.txt').read_text()
-        assert isolated_storage.read_text(['2', 'fx.txt']) == pathlib.Path('.keep').read_text()
-        assert isolated_storage.read_text(['4', 'root', 'f.txt']) == pathlib.Path('example_text.txt').read_text()
+        assert isolated_storage.read_text(['f.txt']) == \
+               pathlib.Path('example_text.txt').read_text(encoding='utf-8')
+        assert isolated_storage.read_text(['2', 'f2.txt']) == \
+               pathlib.Path('example_text.txt').read_text(encoding='utf-8')
+        assert isolated_storage.read_text(['2', 'fx.txt']) == \
+               pathlib.Path('.keep').read_text(encoding='utf-8')
+        assert isolated_storage.read_text(['4', 'root', 'f.txt']) == \
+               pathlib.Path('example_text.txt').read_text(encoding='utf-8')
