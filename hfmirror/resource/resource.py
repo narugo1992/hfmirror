@@ -1,6 +1,4 @@
 import io
-import os
-import re
 import warnings
 from operator import itemgetter
 from typing import Tuple, List, Mapping, Any, Iterable, Union, Dict
@@ -8,41 +6,24 @@ from typing import Tuple, List, Mapping, Any, Iterable, Union, Dict
 from hbutils.string.tree import format_tree
 
 from .item import create_sync_item, SyncItem, _PRESERVED_NAMES
-from ..utils import hash_anything
-
-TargetPathType = Union[str, List[str]]
-
-
-def _split_path_to_segments(path: TargetPathType) -> List[str]:
-    if isinstance(path, (list, tuple)):
-        return list(path)
-    else:
-        return list(filter(bool, re.split(r'[\\/]+', path)))
-
-
-def _prefix_fix(text: str, prefix: str) -> str:
-    prefix_lines = prefix.splitlines(keepends=False)
-    max_prefix_length = max(map(len, prefix_lines))
-
-    text_lines = text.splitlines(keepends=False)
-    if len(text_lines) < len(prefix_lines):
-        text_lines += [''] * (len(prefix_lines) - len(text_lines))
-    if len(prefix_lines) < len(text_lines):
-        prefix_lines += [''] * (len(text_lines) - len(prefix_lines))
-
-    lines = []
-    for i, (prefix_line, text_line) in enumerate(zip(prefix_lines, text_lines)):
-        if text_line and len(prefix_line) < max_prefix_length:
-            prefix_line = prefix_line + ' ' * (max_prefix_length - len(prefix_line))
-        lines.append(prefix_line + text_line)
-
-    return os.linesep.join(lines)
+from ..utils import hash_anything, to_segments, TargetPathType, text_concat, text_parallel
 
 
 class MetadataItem:
     def __init__(self, data: Mapping, segments: List[str]):
         self.data = data
         self.segments = segments
+
+    def __hash__(self):
+        return hash_anything((self.__class__, self.data, self.segments))
+
+    def __eq__(self, other):
+        if self is other:
+            return True
+        elif isinstance(other, MetadataItem):
+            return self.data == other.data and self.segments == other.segments
+        else:
+            return False
 
     def __repr__(self):
         return f'<{self.__class__.__name__} data: {self.data!r}>'
@@ -54,14 +35,6 @@ def _metadata_repr(metadata: Mapping):
             print(f'{key}: {metadata[key]!r}', file=f)
 
         return f.getvalue()
-
-
-def _text_concat(*texts):
-    lines = []
-    for text in texts:
-        lines.extend(text.splitlines(keepends=False))
-
-    return os.linesep.join(lines)
 
 
 class SyncTree:
@@ -126,15 +99,15 @@ class SyncTree:
     def _data_for_repr(self):
         def _recursion(tree, path):
             if isinstance(tree, SyncTree):
-                label = _text_concat(path, '[Metadata]', _metadata_repr(tree.metadata)) if tree.metadata else path
+                label = text_concat(path, '[Metadata]', _metadata_repr(tree.metadata)) if tree.metadata else path
                 return label, [
                     _recursion(tree.items[key], key)
                     for key in sorted(tree.items.keys())
                 ]
             else:
-                body = _text_concat(repr(tree), '[Metadata]', _metadata_repr(tree.metadata)) \
+                body = text_concat(repr(tree), '[Metadata]', _metadata_repr(tree.metadata)) \
                     if tree.metadata else repr(tree)
-                return _prefix_fix(body, f'{path} --> '), []
+                return text_parallel(f'{path} --> ', body), []
 
         return _recursion(self, '<root>')
 
@@ -143,6 +116,14 @@ class SyncTree:
 
     def __hash__(self):
         return hash_anything((type(self), self.metadata, self.items))
+
+    def __eq__(self, other):
+        if self is other:
+            return True
+        elif isinstance(other, SyncTree):
+            return self.items == other.items and self.metadata == other.metadata
+        else:
+            return False
 
 
 SyncItemType = Union[SyncItem, MetadataItem]
@@ -153,7 +134,7 @@ class SyncResource:
         Tuple[str, Any, TargetPathType, Mapping],
         Tuple[str, Any, TargetPathType],
     ]]:
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     def iter_sync_items(self) -> Iterable[SyncItemType]:
         for tpl in self.grab():
@@ -166,7 +147,7 @@ class SyncResource:
                     raise ValueError(f'Sync type data should be a tuple '
                                      f'with length 3 or 4, but {tpl!r} found.')
 
-                segments = _split_path_to_segments(path)
+                segments = to_segments(path)
                 if type_ in _PRESERVED_NAMES:
                     if type_ == 'metadata':
                         if attached_data:
@@ -176,7 +157,7 @@ class SyncResource:
 
                     else:
                         assert False, f'Undefined preserved operation - {type_!r}, ' \
-                                      f'please notice the author about this.'
+                                      f'please notice the author about this.'  # pragma: no cover
                 else:
                     yield create_sync_item(type_, value, attached_data, segments)
 

@@ -2,8 +2,14 @@ import os
 
 import pytest
 from github import Github
+from hbutils.testing import TextAligner
 
 from .testing import start_http_server_to_testfile
+
+
+@pytest.fixture()
+def text_align():
+    return TextAligner().multiple_lines()
 
 
 @pytest.fixture(scope='session')

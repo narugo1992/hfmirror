@@ -7,7 +7,7 @@ from hfmirror.resource import GithubReleaseResource
 def narugo1992_gchar(github_client):
     return GithubReleaseResource(
         repo='narugo1992/gchar',
-        github=github_client,
+        github_client=github_client,
         add_version_attachment=True,
     )
 

@@ -1,5 +1,6 @@
 import re
-from typing import Tuple, Mapping, Any, Union, Iterable, Dict
+import warnings
+from typing import Tuple, Mapping, Any, Union, Iterable, Optional
 
 from github import Github
 from github.GitRelease import GitRelease
@@ -15,28 +16,15 @@ def _to_int(v: Union[str, int]) -> Union[str, int]:
         return v
 
 
-def parse_github_object(obj) -> Github:
-    if isinstance(obj, Github):
-        return obj
-    elif obj is None:
-        return Github()
-    elif isinstance(obj, str):
-        return Github(obj)
-    elif isinstance(obj, tuple):
-        return Github(*obj)
-    elif isinstance(obj, dict):
-        return Github(**obj)
-    else:
-        raise TypeError(f'Unknown github object type - {obj!r}.')
-
-
-_GithubType = Union[Github, str, None, Tuple[str, str], Dict]
-
-
 class GithubReleaseResource(SyncResource):
-    def __init__(self, repo: str, github: _GithubType = None, add_version_attachment: bool = True):
+    def __init__(self, repo: str, *,
+                 github_client: Optional[Github] = None,
+                 access_token: Optional[str] = None,
+                 add_version_attachment: bool = True):
         self.repo = repo
-        self.github_client = parse_github_object(github)
+        if github_client and access_token:
+            warnings.warn('Github client provided, so access token will be ignored.', stacklevel=2)
+        self.github_client = github_client or Github(access_token)
         self.add_version_attachment = add_version_attachment
 
     def _tag_filter(self, tag):
@@ -72,7 +60,7 @@ class GithubReleaseResource(SyncResource):
                 continue
 
             versions.append(tag_name)
-            release_metadata = {'version': release.tag_name, 'url': release.html_url}
+            release_metadata = {'version': release.tag_name, 'title': release.title, 'url': release.html_url}
             yield 'metadata', release_metadata, tag_name
             for asset in release.get_assets():
                 filename = self._filename_filter(tag_name, asset.name)
@@ -86,7 +74,13 @@ class GithubReleaseResource(SyncResource):
         if self.add_version_attachment:
             version_map = {}
             for version in versions:
-                _tuple = self._version_to_tuple(version)
+                try:
+                    _tuple = self._version_to_tuple(version)
+                except ValueError:
+                    warnings.warn(f'Version {version!r} does not match the regular expression, '
+                                  f'so it will be ignored in version indexing.')
+                    continue
+
                 for i in range(len(_tuple) + 1):
                     _part_tuple = _tuple[:i]
                     if _part_tuple in version_map:
