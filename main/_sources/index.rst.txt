@@ -4,7 +4,7 @@ Welcome to hfmirror's Documentation
 Overview
 -------------
 
-``hfmirror`` is a set of easy-to-use python development utilities.
+The `hfmirror` framework provides a user-friendly set of resources for mirroring items to various storage mediums, including local disks and Hugging Face repositories.
 
 .. toctree::
     :maxdepth: 2
