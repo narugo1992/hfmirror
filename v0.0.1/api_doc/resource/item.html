@@ -1,0 +1,362 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>hfmirror.resource.item &mdash; hfmirror 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="hfmirror.resource.resource" href="resource.html" />
+    <link rel="prev" title="hfmirror.resource" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> hfmirror
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/installation/index.html">Installation</a></li>
+</ul>
+<p><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../config/index.html">hfmirror.config</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">hfmirror.resource</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">hfmirror.resource.item</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#syncitem">SyncItem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#textoutputsyncitem">TextOutputSyncItem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#remotesyncitem">RemoteSyncItem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#customsyncitem">CustomSyncItem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#resourcenotchange">ResourceNotChange</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="resource.html">hfmirror.resource.resource</a></li>
+<li class="toctree-l2"><a class="reference internal" href="github.html">hfmirror.resource.github</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../storage/index.html">hfmirror.storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../sync/index.html">hfmirror.sync</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils/index.html">hfmirror.utils</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">hfmirror</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">hfmirror.resource</a> &raquo;</li>
+        
+      <li>hfmirror.resource.item</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/api_doc/resource/item.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+    
+    
+  <section id="module-hfmirror.resource.item">
+<span id="hfmirror-resource-item"></span><h1>hfmirror.resource.item<a class="headerlink" href="#module-hfmirror.resource.item" title="Permalink to this headline">¶</a></h1>
+<section id="syncitem">
+<h2>SyncItem<a class="headerlink" href="#syncitem" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="hfmirror.resource.item.SyncItem">
+<em class="property">class </em><code class="sig-prename descclassname">hfmirror.resource.item.</code><code class="sig-name descname">SyncItem</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">metadata</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">segments</span><span class="p">:</span> <span class="n">List<span class="p">[</span>str<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfmirror/resource/item.html#SyncItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hfmirror.resource.item.SyncItem" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="hfmirror.resource.item.SyncItem.__eq__">
+<code class="sig-name descname">__eq__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfmirror/resource/item.html#SyncItem.__eq__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hfmirror.resource.item.SyncItem.__eq__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return self==value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="hfmirror.resource.item.SyncItem.__hash__">
+<code class="sig-name descname">__hash__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfmirror/resource/item.html#SyncItem.__hash__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hfmirror.resource.item.SyncItem.__hash__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return hash(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="hfmirror.resource.item.SyncItem.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">metadata</span><span class="p">:</span> <span class="n">dict</span></em>, <em class="sig-param"><span class="n">segments</span><span class="p">:</span> <span class="n">List<span class="p">[</span>str<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfmirror/resource/item.html#SyncItem.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hfmirror.resource.item.SyncItem.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="textoutputsyncitem">
+<h2>TextOutputSyncItem<a class="headerlink" href="#textoutputsyncitem" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="hfmirror.resource.item.TextOutputSyncItem">
+<em class="property">class </em><code class="sig-prename descclassname">hfmirror.resource.item.</code><code class="sig-name descname">TextOutputSyncItem</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">content</span></em>, <em class="sig-param"><span class="n">metadata</span></em>, <em class="sig-param"><span class="n">segments</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfmirror/resource/item.html#TextOutputSyncItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hfmirror.resource.item.TextOutputSyncItem" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="hfmirror.resource.item.TextOutputSyncItem.__eq__">
+<code class="sig-name descname">__eq__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="headerlink" href="#hfmirror.resource.item.TextOutputSyncItem.__eq__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return self==value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="hfmirror.resource.item.TextOutputSyncItem.__hash__">
+<code class="sig-name descname">__hash__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hfmirror.resource.item.TextOutputSyncItem.__hash__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return hash(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="hfmirror.resource.item.TextOutputSyncItem.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">content</span></em>, <em class="sig-param"><span class="n">metadata</span></em>, <em class="sig-param"><span class="n">segments</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfmirror/resource/item.html#TextOutputSyncItem.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hfmirror.resource.item.TextOutputSyncItem.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="remotesyncitem">
+<h2>RemoteSyncItem<a class="headerlink" href="#remotesyncitem" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="hfmirror.resource.item.RemoteSyncItem">
+<em class="property">class </em><code class="sig-prename descclassname">hfmirror.resource.item.</code><code class="sig-name descname">RemoteSyncItem</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">url</span></em>, <em class="sig-param"><span class="n">metadata</span></em>, <em class="sig-param"><span class="n">segments</span><span class="p">:</span> <span class="n">List<span class="p">[</span>str<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfmirror/resource/item.html#RemoteSyncItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hfmirror.resource.item.RemoteSyncItem" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="hfmirror.resource.item.RemoteSyncItem.__eq__">
+<code class="sig-name descname">__eq__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="headerlink" href="#hfmirror.resource.item.RemoteSyncItem.__eq__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return self==value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="hfmirror.resource.item.RemoteSyncItem.__hash__">
+<code class="sig-name descname">__hash__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hfmirror.resource.item.RemoteSyncItem.__hash__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return hash(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="hfmirror.resource.item.RemoteSyncItem.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">url</span></em>, <em class="sig-param"><span class="n">metadata</span></em>, <em class="sig-param"><span class="n">segments</span><span class="p">:</span> <span class="n">List<span class="p">[</span>str<span class="p">]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfmirror/resource/item.html#RemoteSyncItem.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hfmirror.resource.item.RemoteSyncItem.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="customsyncitem">
+<h2>CustomSyncItem<a class="headerlink" href="#customsyncitem" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="hfmirror.resource.item.CustomSyncItem">
+<em class="property">class </em><code class="sig-prename descclassname">hfmirror.resource.item.</code><code class="sig-name descname">CustomSyncItem</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gene</span></em>, <em class="sig-param"><span class="n">metadata</span></em>, <em class="sig-param"><span class="n">segments</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfmirror/resource/item.html#CustomSyncItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hfmirror.resource.item.CustomSyncItem" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="hfmirror.resource.item.CustomSyncItem.__eq__">
+<code class="sig-name descname">__eq__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="headerlink" href="#hfmirror.resource.item.CustomSyncItem.__eq__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return self==value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="hfmirror.resource.item.CustomSyncItem.__hash__">
+<code class="sig-name descname">__hash__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#hfmirror.resource.item.CustomSyncItem.__hash__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return hash(self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="hfmirror.resource.item.CustomSyncItem.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gene</span></em>, <em class="sig-param"><span class="n">metadata</span></em>, <em class="sig-param"><span class="n">segments</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfmirror/resource/item.html#CustomSyncItem.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hfmirror.resource.item.CustomSyncItem.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="resourcenotchange">
+<h2>ResourceNotChange<a class="headerlink" href="#resourcenotchange" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="hfmirror.resource.item.ResourceNotChange">
+<em class="property">class </em><code class="sig-prename descclassname">hfmirror.resource.item.</code><code class="sig-name descname">ResourceNotChange</code><a class="reference internal" href="../../_modules/hfmirror/resource/item.html#ResourceNotChange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hfmirror.resource.item.ResourceNotChange" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="resource.html" class="btn btn-neutral float-right" title="hfmirror.resource.resource" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="hfmirror.resource" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2023, narugo1992
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+    <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    <span class="fa fa-book"> Other Versions</span>
+    v: v0.0.1
+    <span class="fa fa-caret-down"></span>
+  </span>
+        <div class="rst-other-versions">
+                <dl>
+                    <dt>Tags</dt>
+                        <dd><a href="item.html">v0.0.1</a></dd>
+                </dl>
+                <dl>
+                    <dt>Branches</dt>
+                        <dd><a href="../../../main/api_doc/resource/item.html">main</a></dd>
+                </dl>
+        </div>
+    </div>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
