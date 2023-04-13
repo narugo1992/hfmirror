@@ -65,7 +65,7 @@ class RemoteSyncItem(SyncItem):
     def load_file(self) -> ContextManager[str]:
         with TemporaryDirectory() as td:
             filename = os.path.join(td, urlsplit(self.url).filename or 'unnamed_file')
-            download_file(self.url, filename)
+            download_file(self.url, filename, session=self._session)
             self._file_process(filename)
             yield filename
 

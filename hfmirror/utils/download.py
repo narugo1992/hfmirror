@@ -3,10 +3,12 @@ import os
 import requests
 from tqdm.auto import tqdm
 
+from .session import get_requests_session, srequest
 
-def download_file(url, filename, expected_size: int = None, desc=None):
-    response = requests.get(url, stream=True, allow_redirects=True)
-    response.raise_for_status()
+
+def download_file(url, filename, expected_size: int = None, desc=None, session=None):
+    session = session or get_requests_session()
+    response = srequest(session, 'GET', url, stream=True, allow_redirects=True)
     expected_size = expected_size or response.headers.get('Content-Length', None)
     expected_size = int(expected_size) if expected_size is not None else expected_size
 
@@ -21,9 +23,10 @@ def download_file(url, filename, expected_size: int = None, desc=None):
                 f.write(chunk)
                 pbar.update(len(chunk))
 
-    if expected_size is not None and os.path.getsize(filename) != expected_size:
+    actual_size = os.path.getsize(filename)
+    if expected_size is not None and actual_size != expected_size:
         os.remove(filename)
         raise requests.exceptions.HTTPError(f"Downloaded file is not of expected size, "
-                                            f"{expected_size} expected but {os.path.getsize(filename)} found.")
+                                            f"{expected_size} expected but {actual_size} found.")
 
     return filename
