@@ -1207,3 +1207,4 @@ fabric.properties
 /docs/source/**/*.dat.*
 !/docs/source/_static/**/*
 /extra
+!/test/testfile/*

@@ -50,3 +50,64 @@ class TestStorageHuggingface:
         assert hf_storage.read_text(['.keep']) == pathlib.Path('.keep').read_text(encoding='utf-8')
         assert hf_storage.read_text(['example_text.txt']) == \
                pathlib.Path('example_text.txt').read_text(encoding='utf-8')
+
+        additions, deletions, message = hf_storage.batch_change_files([
+            ('example_text.txt', ['f.txt']),
+            ('example_text.txt', ['2', 'f.txt']),
+            ('.keep', ['2', 'f2.txt']),
+        ])
+        assert (additions, deletions) == (3, 0)
+        assert hf_storage.file_exists(['f.txt'])
+        assert hf_storage.file_exists(['2', 'f.txt'])
+        assert hf_storage.file_exists(['2', 'f2.txt'])
+        assert not hf_storage.file_exists(['2', 'fx.txt'])
+        assert hf_storage.read_text(['f.txt']) == \
+               pathlib.Path('example_text.txt').read_text(encoding='utf-8')
+        assert hf_storage.read_text(['2', 'f.txt']) == \
+               pathlib.Path('example_text.txt').read_text(encoding='utf-8')
+        assert hf_storage.read_text(['2', 'f2.txt']) == \
+               pathlib.Path('.keep').read_text(encoding='utf-8')
+
+        with pytest.warns(Warning):
+            additions, deletions, message = hf_storage.batch_change_files([
+                (None, ['2', 'f.txt']),
+                ('.keep', ['2', 'fx.txt']),
+                (None, ['2', 'f2.txt']),
+                ('example_text.txt', ['4', 'root', 'f.txt']),
+                ('example_text.txt', ['2', 'f2.txt']),
+                ('无痕行者.png', ['无痕行者.png']),
+            ])
+        assert (additions, deletions) == (3, 1)
+        assert hf_storage.file_exists(['f.txt'])
+        assert not hf_storage.file_exists(['2', 'f.txt'])
+        assert hf_storage.file_exists(['2', 'f2.txt'])
+        assert hf_storage.file_exists(['2', 'fx.txt'])
+        assert hf_storage.file_exists(['4', 'root', 'f.txt'])
+        assert hf_storage.read_text(['f.txt']) == \
+               pathlib.Path('example_text.txt').read_text(encoding='utf-8')
+        assert hf_storage.read_text(['2', 'f2.txt']) == \
+               pathlib.Path('example_text.txt').read_text(encoding='utf-8')
+        assert hf_storage.read_text(['2', 'fx.txt']) == \
+               pathlib.Path('.keep').read_text(encoding='utf-8')
+        assert hf_storage.read_text(['4', 'root', 'f.txt']) == \
+               pathlib.Path('example_text.txt').read_text(encoding='utf-8')
+
+        with pytest.warns(Warning):
+            additions, deletions, message = hf_storage.batch_change_files([
+                (None, ['2', 'f.txt']),
+                ('.keep', ['2', 'fx.txt']),
+                ('.keep', ['2', 'fx.txt']),
+                ('example_text.txt', ['4', 'root', 'f.txt']),
+                ('example_text.txt', ['2', 'f2.txt']),
+            ])
+        assert (additions, deletions) == (0, 0)
+        assert message is None
+
+    def test_hf_warning(self, huggingface_client, huggingface_access_token):
+        with pytest.warns(Warning):
+            st = HuggingfaceStorage('narugo/gchar', hf_client=huggingface_client, access_token=huggingface_access_token)
+            assert st.hf_client is huggingface_client
+
+    def test_hf_invalid_type(self):
+        with pytest.raises(ValueError):
+            _ = HuggingfaceStorage('narugo/gchar', repo_type='what_the_fxxk')

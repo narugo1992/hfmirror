@@ -61,18 +61,21 @@ def hf_local_upload_check(uploads: List[Tuple[Optional[str], str]],
         fs_in_repo = tuple(to_segments(f_in_repo))
         f_meta = online_file_info.get(fs_in_repo, None)
         if not f_meta:
-            if f_in_local:  # not exist in repo, need to upload
+            if f_in_local is not None:  # not exist in repo, need to upload
                 checks.append(True)
             else:  # not exist in repo, do not need to delete
                 checks.append(False)
         else:
-            if 'lfs' in f_meta:  # is a lfs file
-                is_lfs, oid, filesize = True, f_meta['lfs']['oid'], f_meta['lfs']['size']
-            else:  # not lfs
-                is_lfs, oid, filesize = False, f_meta['oid'], f_meta['size']
+            if f_in_local is not None:  # going to upload
+                if 'lfs' in f_meta:  # is a lfs file
+                    is_lfs, oid, filesize = True, f_meta['lfs']['oid'], f_meta['lfs']['size']
+                else:  # not lfs
+                    is_lfs, oid, filesize = False, f_meta['oid'], f_meta['size']
 
-            _is_duplicated = _single_resource_is_duplicated(f_in_local, is_lfs, oid, filesize, chunk_for_hash)
-            checks.append(not _is_duplicated)  # exist, need to upload if not the same
+                _is_duplicated = _single_resource_is_duplicated(f_in_local, is_lfs, oid, filesize, chunk_for_hash)
+                checks.append(not _is_duplicated)  # exist, need to upload if not the same
+            else:  # going to delete
+                checks.append(True)
 
     return checks
 
@@ -92,7 +95,7 @@ class HuggingfaceStorage(BaseStorage):
             warnings.warn('Huggingface client provided, so access token will be ignored.', stacklevel=2)
         self.hf_client = hf_client or HfApi(token=access_token)
         self.repo = repo
-        self.repo_type = repo_type
+        self.repo_type = _check_repo_type(repo_type)
         self.revision = revision
         self.namespace = to_segments(namespace or [])
         self.session = get_requests_session()
@@ -131,22 +134,28 @@ class HuggingfaceStorage(BaseStorage):
         uploads_is_needed = hf_local_upload_check(uploads, self.repo, self.repo_type, self.revision,
                                                   session=self.session)
 
-        operations, op_items = [], []
+        operations, op_items, additions, deletions = [], [], 0, 0
         for (local_filename, fip), need in zip(uploads, uploads_is_needed):
             if need:
                 if local_filename is None:
                     operations.append(CommitOperationDelete(path_in_repo=fip))
                     op_items.append(f'-{fip}')
+                    deletions += 1
                 else:
                     operations.append(CommitOperationAdd(path_in_repo=fip, path_or_fileobj=local_filename))
                     op_items.append(f'+{fip}')
+                    additions += 1
 
         if operations:
             current_time = datetime.datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S %Z')
             msg = ', '.join(sorted(op_items))
+            commit_message = f"{msg}, on {current_time}"
             self.hf_client.create_commit(
                 self.repo, operations,
-                commit_message=f"{msg}, on {current_time}",
+                commit_message=commit_message,
                 repo_type=self.repo_type,
                 revision=self.revision,
             )
+            return additions, deletions, commit_message
+        else:
+            return additions, deletions, None
