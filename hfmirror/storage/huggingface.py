@@ -150,6 +150,7 @@ class HuggingfaceStorage(BaseStorage):
             current_time = datetime.datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S %Z')
             msg = ', '.join(sorted(op_items))
             commit_message = f"{msg}, on {current_time}"
+            print(operations, commit_message)
             self.hf_client.create_commit(
                 self.repo, operations,
                 commit_message=commit_message,
