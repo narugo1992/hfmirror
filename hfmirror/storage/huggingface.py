@@ -108,7 +108,12 @@ class HuggingfaceStorage(BaseStorage):
 
     def file_exists(self, file: List[str]) -> bool:
         resp = srequest(self.session, 'HEAD', self._file_url(file), raise_for_status=False)
-        return resp.ok
+        if resp.ok:  # file is here
+            return True
+        elif resp.status_code == 404:  # file not found
+            return False
+        else:  # network error
+            resp.raise_for_status()  # pragma: no cover
 
     def read_text(self, file: List[str], encoding: str = 'utf-8') -> str:
         return srequest(self.session, 'GET', self._file_url(file)).content.decode(encoding=encoding)
@@ -150,7 +155,6 @@ class HuggingfaceStorage(BaseStorage):
             current_time = datetime.datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S %Z')
             msg = ', '.join(sorted(op_items))
             commit_message = f"{msg}, on {current_time}"
-            print(operations, commit_message)
             self.hf_client.create_commit(
                 self.repo, operations,
                 commit_message=commit_message,
