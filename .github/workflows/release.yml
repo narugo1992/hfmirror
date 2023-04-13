@@ -32,11 +32,9 @@ jobs:
           pip install --upgrade flake8 setuptools wheel twine
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f requirements-test.txt ]; then pip install -r requirements-test.txt; fi
-          pip install -r requirements-crawl.txt
           pip install --upgrade build
       - name: Build packages
         run: |
-          make download
           python -m build --sdist --wheel --outdir dist/
       - name: Publish distribution 📦 to real PyPI
         uses: pypa/gh-action-pypi-publish@master
