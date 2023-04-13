@@ -4,29 +4,14 @@ import warnings
 from hashlib import sha256, sha1
 from typing import List, Tuple, Optional, Union
 
-import requests
 from huggingface_hub import HfApi, hf_hub_url, CommitOperationAdd, CommitOperationDelete
 
 from .base import BaseStorage
 from ..utils import to_segments, srequest, get_requests_session
 
 
-def hf_resource_check(local_filename, repo_id: str, file_in_repo: str, repo_type='dataset', revision='main',
-                      chunk_for_hash: int = 1 << 20):
-    response = requests.post(
-        f"https://huggingface.co/api/{repo_type}s/{repo_id}/paths-info/{revision}",
-        json={"paths": [file_in_repo]},
-    )
-    _raw_data = response.json()
-    if not _raw_data:
-        return False
-
-    metadata = response.json()[0]
-    if 'lfs' in metadata:
-        is_lfs, oid, filesize = True, metadata['lfs']['oid'], metadata['lfs']['size']
-    else:
-        is_lfs, oid, filesize = False, metadata['oid'], metadata['size']
-
+def _single_resource_is_duplicated(local_filename: str, is_lfs: bool, oid: str, filesize: int,
+                                   chunk_for_hash: int = 1 << 20) -> bool:
     if filesize != os.path.getsize(local_filename):
         return False
 
@@ -44,6 +29,52 @@ def hf_resource_check(local_filename, repo_id: str, file_in_repo: str, repo_type
             sha.update(data)
 
     return sha.hexdigest() == oid
+
+
+def hf_local_upload_check(uploads: List[Tuple[Optional[str], str]],
+                          repo_id: str, repo_type='dataset', revision='main',
+                          chunk_for_hash: int = 1 << 20, session=None) -> List[bool]:
+    """
+    Overview:
+        Check resource on huggingface repo and local.
+
+    :param uploads: Tuples of uploads, the first item is the local file, second item is the file in repo. When \
+        first item is None, it means delete this item in repo.
+    :param repo_id: Repository id, the same as that in huggingface library.
+    :param repo_type: Repository type, the same as that in huggingface library.
+    :param revision: Revision of repository, the same as that in huggingface library.
+    :param chunk_for_hash: Chunk size for hashing calculation.
+    :param session: Session of requests, will be auto created when not given.
+    :return: Uploads are necessary or not, in form of lists of boolean.
+    """
+    session = session or get_requests_session()
+    files_in_repo = [f for _, f in uploads]
+    resp = srequest(
+        session,
+        'POST', f"https://huggingface.co/api/{repo_type}s/{repo_id}/paths-info/{revision}",
+        json={"paths": files_in_repo},
+    )
+    online_file_info = {tuple(to_segments(item['path'])): item for item in resp.json()}
+
+    checks = []
+    for f_in_local, f_in_repo in uploads:
+        fs_in_repo = tuple(to_segments(f_in_repo))
+        f_meta = online_file_info.get(fs_in_repo, None)
+        if not f_meta:
+            if f_in_local:  # not exist in repo, need to upload
+                checks.append(True)
+            else:  # not exist in repo, do not need to delete
+                checks.append(False)
+        else:
+            if 'lfs' in f_meta:  # is a lfs file
+                is_lfs, oid, filesize = True, f_meta['lfs']['oid'], f_meta['lfs']['size']
+            else:  # not lfs
+                is_lfs, oid, filesize = False, f_meta['oid'], f_meta['size']
+
+            _is_duplicated = _single_resource_is_duplicated(f_in_local, is_lfs, oid, filesize, chunk_for_hash)
+            checks.append(not _is_duplicated)  # exist, need to upload if not the same
+
+    return checks
 
 
 def _check_repo_type(repo_type):
@@ -80,29 +111,39 @@ class HuggingfaceStorage(BaseStorage):
         return srequest(self.session, 'GET', self._file_url(file)).content.decode(encoding=encoding)
 
     def batch_change_files(self, changes: List[Tuple[Optional[str], List[str]]]):
-        operations = []
-        ops = []
+        _map_changes = {}
         for local_filename, file_in_repo in changes:
-            fip = self.path_join(*file_in_repo)
-            if local_filename is None:
-                operations.append(CommitOperationDelete(path_in_repo=fip))
-                ops.append(f'-{fip}')
-            else:
-                if not hf_resource_check(
-                        local_filename, self.repo,
-                        file_in_repo=fip,
-                        repo_type=self.repo_type,
-                        revision=self.revision,
-                ):
-                    operations.append(CommitOperationAdd(
-                        path_in_repo=fip,
-                        path_or_fileobj=local_filename
-                    ))
-                    ops.append(f'+{fip}')
+            sg = tuple(file_in_repo)
+            if sg in _map_changes:
+                fip = self.path_join(*file_in_repo)
+                if _map_changes[sg] is None:
+                    warnings.warn(f'Deletion of resource {fip!r} is not necessary, will be ignored.')
+                else:
+                    warnings.warn(f'Uploading of local resource {_map_changes[sg]!r} to {fip!r} '
+                                  f'is not necessary, will be ignored.')
+
+            _map_changes[sg] = local_filename
+
+        uploads = [
+            (local_filename, self.path_join(*file_in_repo))
+            for file_in_repo, local_filename in _map_changes.items()
+        ]
+        uploads_is_needed = hf_local_upload_check(uploads, self.repo, self.repo_type, self.revision,
+                                                  session=self.session)
+
+        operations, op_items = [], []
+        for (local_filename, fip), need in zip(uploads, uploads_is_needed):
+            if need:
+                if local_filename is None:
+                    operations.append(CommitOperationDelete(path_in_repo=fip))
+                    op_items.append(f'-{fip}')
+                else:
+                    operations.append(CommitOperationAdd(path_in_repo=fip, path_or_fileobj=local_filename))
+                    op_items.append(f'+{fip}')
 
         if operations:
             current_time = datetime.datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S %Z')
-            msg = ', '.join(ops)
+            msg = ', '.join(sorted(op_items))
             self.hf_client.create_commit(
                 self.repo, operations,
                 commit_message=f"{msg}, on {current_time}",
