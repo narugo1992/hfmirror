@@ -93,6 +93,11 @@ class TestStorageHuggingface:
         assert hf_storage.read_text(['4', 'root', 'f.txt']) == \
                pathlib.Path('example_text.txt').read_text(encoding='utf-8')
 
+        with pytest.raises(FileExistsError):
+            hf_storage.batch_change_files([
+                ('example_text.txt', ['2']),
+            ])
+
         # still a bug on windows
         # see: https://github.com/narugo1992/hfmirror/issues/1
         if not OS.windows:
@@ -106,6 +111,14 @@ class TestStorageHuggingface:
                 ])
             assert (additions, deletions) == (0, 0)
             assert message is None
+
+            additions, deletions, message = hf_storage.batch_change_files([
+                (None, ['2', 'f2.txt']),
+                (None, ['4']),
+            ])
+            assert (additions, deletions) == (0, 2)
+            assert not hf_storage.file_exists(['2', 'f2.txt'])
+            assert not hf_storage.file_exists(['4', 'root', 'f.txt'])
 
     def test_hf_warning(self, huggingface_client, huggingface_access_token):
         with pytest.warns(Warning):
