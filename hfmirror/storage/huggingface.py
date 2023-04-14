@@ -33,7 +33,7 @@ def _single_resource_is_duplicated(local_filename: str, is_lfs: bool, oid: str, 
 
 def hf_local_upload_check(uploads: List[Tuple[Optional[str], str]],
                           repo_id: str, repo_type='dataset', revision='main',
-                          chunk_for_hash: int = 1 << 20, session=None) -> List[bool]:
+                          chunk_for_hash: int = 1 << 20, session=None) -> List[Tuple[bool, str]]:
     """
     Overview:
         Check resource on huggingface repo and local.
@@ -62,9 +62,9 @@ def hf_local_upload_check(uploads: List[Tuple[Optional[str], str]],
         f_meta = online_file_info.get(fs_in_repo, None)
         if not f_meta:
             if f_in_local is not None:  # not exist in repo, need to upload
-                checks.append(True)
+                checks.append((True, 'file'))
             else:  # not exist in repo, do not need to delete
-                checks.append(False)
+                checks.append((False, None))
         else:
             if f_in_local is not None:  # going to upload
                 if 'lfs' in f_meta:  # is a lfs file
@@ -76,9 +76,9 @@ def hf_local_upload_check(uploads: List[Tuple[Optional[str], str]],
                     raise FileExistsError(f'Path {f_meta["path"]!r} is a directory on huggingface, '
                                           f'unable to replace it with local file {f_in_local}.')
                 _is_duplicated = _single_resource_is_duplicated(f_in_local, is_lfs, oid, filesize, chunk_for_hash)
-                checks.append(not _is_duplicated)  # exist, need to upload if not the same
+                checks.append((not _is_duplicated, f_meta['type']))  # exist, need to upload if not the same
             else:  # going to delete
-                checks.append(True)
+                checks.append((True, f_meta['type']))
 
     return checks
 
@@ -143,10 +143,15 @@ class HuggingfaceStorage(BaseStorage):
                                                   session=self.session)
 
         operations, op_items, additions, deletions = [], [], 0, 0
-        for (local_filename, fip), need in zip(uploads, uploads_is_needed):
+        for (local_filename, fip), (need, objtype) in zip(uploads, uploads_is_needed):
             if need:
                 if local_filename is None:
-                    operations.append(CommitOperationDelete(path_in_repo=fip))
+                    if objtype == 'directory':  # a / should be at the end of path when deleting a folder
+                        fip = f'{fip}/'
+                        is_folder = True
+                    else:
+                        is_folder = False
+                    operations.append(CommitOperationDelete(path_in_repo=fip, is_folder=is_folder))
                     op_items.append(f'-{fip}')
                     deletions += 1
                 else:
