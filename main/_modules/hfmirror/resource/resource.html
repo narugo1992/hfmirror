@@ -162,11 +162,11 @@
 <span></span><span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">itemgetter</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Callable</span>
 
 <span class="kn">from</span> <span class="nn">hbutils.string.tree</span> <span class="kn">import</span> <span class="n">format_tree</span>
 
-<span class="kn">from</span> <span class="nn">.item</span> <span class="kn">import</span> <span class="n">create_sync_item</span><span class="p">,</span> <span class="n">SyncItem</span><span class="p">,</span> <span class="n">_PRESERVED_NAMES</span>
+<span class="kn">from</span> <span class="nn">.item</span> <span class="kn">import</span> <span class="n">create_sync_item</span><span class="p">,</span> <span class="n">SyncItem</span><span class="p">,</span> <span class="n">_PRESERVED_NAMES</span><span class="p">,</span> <span class="n">_REGISTERED_SYNC_TYPES</span>
 <span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">hash_anything</span><span class="p">,</span> <span class="n">to_segments</span><span class="p">,</span> <span class="n">TargetPathType</span><span class="p">,</span> <span class="n">text_concat</span><span class="p">,</span> <span class="n">text_parallel</span>
 
 
@@ -291,11 +291,22 @@
 
 
 <div class="viewcode-block" id="SyncResource"><a class="viewcode-back" href="../../../api_doc/resource/resource.html#hfmirror.resource.resource.SyncResource">[docs]</a><span class="k">class</span> <span class="nc">SyncResource</span><span class="p">:</span>
+<div class="viewcode-block" id="SyncResource.__init__"><a class="viewcode-back" href="../../../api_doc/resource/resource.html#hfmirror.resource.resource.SyncResource.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_registered_ops</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span></div>
+
     <span class="k">def</span> <span class="nf">grab</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span>
         <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">TargetPathType</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">],</span>
         <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">TargetPathType</span><span class="p">],</span>
     <span class="p">]]:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>  <span class="c1"># pragma: no cover</span>
+
+    <span class="k">def</span> <span class="nf">register_operation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_PRESERVED_NAMES</span> <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_REGISTERED_SYNC_TYPES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Operation name </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s1"> has already been preserved or registered as a sync item.&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registered_ops</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_registered_ops</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Operation </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> has already been registered.&#39;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">iter_sync_items</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">SyncItemType</span><span class="p">]:</span>
         <span class="k">for</span> <span class="n">tpl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grab</span><span class="p">():</span>
@@ -319,6 +330,8 @@
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Undefined preserved operation - </span><span class="si">{</span><span class="n">type_</span><span class="si">!r}</span><span class="s1">, &#39;</span> \
                                       <span class="sa">f</span><span class="s1">&#39;please notice the author about this.&#39;</span>  <span class="c1"># pragma: no cover</span>
+                <span class="k">elif</span> <span class="n">type_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registered_ops</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_registered_ops</span><span class="p">[</span><span class="n">type_</span><span class="p">](</span><span class="n">value</span><span class="p">,</span> <span class="n">segments</span><span class="p">,</span> <span class="n">attached_data</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">yield</span> <span class="n">create_sync_item</span><span class="p">(</span><span class="n">type_</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">attached_data</span><span class="p">,</span> <span class="n">segments</span><span class="p">)</span>
 

@@ -207,6 +207,7 @@
 
 <div class="viewcode-block" id="RemoteSyncItem"><a class="viewcode-back" href="../../../api_doc/resource/item.html#hfmirror.resource.item.RemoteSyncItem">[docs]</a><span class="k">class</span> <span class="nc">RemoteSyncItem</span><span class="p">(</span><span class="n">SyncItem</span><span class="p">):</span>
     <span class="n">__type__</span> <span class="o">=</span> <span class="s1">&#39;remote&#39;</span>
+    <span class="n">__headers__</span> <span class="o">=</span> <span class="p">{}</span>
 
 <div class="viewcode-block" id="RemoteSyncItem.__init__"><a class="viewcode-back" href="../../../api_doc/resource/item.html#hfmirror.resource.item.RemoteSyncItem.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">segments</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
         <span class="n">SyncItem</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">segments</span><span class="p">)</span>
@@ -215,7 +216,7 @@
 
     <span class="k">def</span> <span class="nf">_get_session</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="o">=</span> <span class="n">get_requests_session</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="o">=</span> <span class="n">get_requests_session</span><span class="p">(</span><span class="n">headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__headers__</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span>
 
