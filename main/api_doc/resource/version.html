@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>hfmirror.resource &mdash; hfmirror 0.0.1 documentation</title>
+  <title>hfmirror.resource.version &mdash; hfmirror 0.0.1 documentation</title>
   
 
   
@@ -37,8 +37,8 @@
   <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="hfmirror.resource.item" href="item.html" />
-    <link rel="prev" title="hfmirror.config.meta" href="../config/meta.html" /> 
+    <link rel="next" title="hfmirror.storage" href="../storage/index.html" />
+    <link rel="prev" title="hfmirror.resource.sourceforge" href="sourceforge.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -93,12 +93,15 @@
 <p><span class="caption-text">API Documentation</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../config/index.html">hfmirror.config</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">hfmirror.resource</a><ul>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">hfmirror.resource</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="item.html">hfmirror.resource.item</a></li>
 <li class="toctree-l2"><a class="reference internal" href="resource.html">hfmirror.resource.resource</a></li>
 <li class="toctree-l2"><a class="reference internal" href="github.html">hfmirror.resource.github</a></li>
 <li class="toctree-l2"><a class="reference internal" href="sourceforge.html">hfmirror.resource.sourceforge</a></li>
-<li class="toctree-l2"><a class="reference internal" href="version.html">hfmirror.resource.version</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">hfmirror.resource.version</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#versionbasedresource">VersionBasedResource</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../storage/index.html">hfmirror.storage</a></li>
@@ -149,13 +152,15 @@
     
       <li><a href="../../index.html">Docs</a> &raquo;</li>
         
-      <li>hfmirror.resource</li>
+          <li><a href="index.html">hfmirror.resource</a> &raquo;</li>
+        
+      <li>hfmirror.resource.version</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../../_sources/api_doc/resource/index.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/api_doc/resource/version.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -170,39 +175,22 @@
             
     
     
-  <section id="module-hfmirror.resource">
-<span id="hfmirror-resource"></span><h1>hfmirror.resource<a class="headerlink" href="#module-hfmirror.resource" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="item.html">hfmirror.resource.item</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="item.html#syncitem">SyncItem</a></li>
-<li class="toctree-l2"><a class="reference internal" href="item.html#textoutputsyncitem">TextOutputSyncItem</a></li>
-<li class="toctree-l2"><a class="reference internal" href="item.html#remotesyncitem">RemoteSyncItem</a></li>
-<li class="toctree-l2"><a class="reference internal" href="item.html#customsyncitem">CustomSyncItem</a></li>
-<li class="toctree-l2"><a class="reference internal" href="item.html#resourcenotchange">ResourceNotChange</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="resource.html">hfmirror.resource.resource</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="resource.html#metadataitem">MetadataItem</a></li>
-<li class="toctree-l2"><a class="reference internal" href="resource.html#synctree">SyncTree</a></li>
-<li class="toctree-l2"><a class="reference internal" href="resource.html#syncresource">SyncResource</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="github.html">hfmirror.resource.github</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="github.html#githubreleaseresource">GithubReleaseResource</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="sourceforge.html">hfmirror.resource.sourceforge</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="sourceforge.html#wgetremoteitem">WgetRemoteItem</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sourceforge.html#sourceforgefilesresource">SourceForgeFilesResource</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="version.html">hfmirror.resource.version</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="version.html#versionbasedresource">VersionBasedResource</a></li>
-</ul>
-</li>
-</ul>
-</div>
+  <section id="module-hfmirror.resource.version">
+<span id="hfmirror-resource-version"></span><h1>hfmirror.resource.version<a class="headerlink" href="#module-hfmirror.resource.version" title="Permalink to this headline">¶</a></h1>
+<section id="versionbasedresource">
+<h2>VersionBasedResource<a class="headerlink" href="#versionbasedresource" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="hfmirror.resource.version.VersionBasedResource">
+<em class="property">class </em><code class="sig-prename descclassname">hfmirror.resource.version.</code><code class="sig-name descname">VersionBasedResource</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">add_version_attachment</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfmirror/resource/version.html#VersionBasedResource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hfmirror.resource.version.VersionBasedResource" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="hfmirror.resource.version.VersionBasedResource.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">add_version_attachment</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/hfmirror/resource/version.html#VersionBasedResource.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#hfmirror.resource.version.VersionBasedResource.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 </section>
 
 
@@ -214,10 +202,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="item.html" class="btn btn-neutral float-right" title="hfmirror.resource.item" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../storage/index.html" class="btn btn-neutral float-right" title="hfmirror.storage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="../config/meta.html" class="btn btn-neutral float-left" title="hfmirror.config.meta" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="sourceforge.html" class="btn btn-neutral float-left" title="hfmirror.resource.sourceforge" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -250,11 +238,11 @@
         <div class="rst-other-versions">
                 <dl>
                     <dt>Tags</dt>
-                        <dd><a href="../../../v0.0.1/api_doc/resource/index.html">v0.0.1</a></dd>
+                        <dd><a href="../../../v0.0.1/index.html">v0.0.1</a></dd>
                 </dl>
                 <dl>
                     <dt>Branches</dt>
-                        <dd><a href="index.html">main</a></dd>
+                        <dd><a href="version.html">main</a></dd>
                 </dl>
         </div>
     </div>

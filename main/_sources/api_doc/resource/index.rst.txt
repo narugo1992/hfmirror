@@ -11,3 +11,6 @@ hfmirror.resource
     item
     resource
     github
+    sourceforge
+    version
+
