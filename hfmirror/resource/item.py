@@ -46,6 +46,7 @@ class SyncItem(metaclass=abc.ABCMeta):
 
 class RemoteSyncItem(SyncItem):
     __type__ = 'remote'
+    __headers__ = {}
 
     def __init__(self, url, metadata, segments: List[str]):
         SyncItem.__init__(self, url, metadata, segments)
@@ -54,7 +55,7 @@ class RemoteSyncItem(SyncItem):
 
     def _get_session(self) -> requests.Session:
         if self._session is None:
-            self._session = get_requests_session()
+            self._session = get_requests_session(headers=self.__headers__)
 
         return self._session
 

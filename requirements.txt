@@ -2,5 +2,6 @@ hbutils>=0.8.6
 tqdm>=4.0.0
 click>=7.0.0
 requests
+pyquery
 pygithub
 huggingface_hub

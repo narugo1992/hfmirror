@@ -19,6 +19,7 @@ def isolated_storage():
 
 class ArknightsSkinResource(SyncResource):
     def __init__(self, chs: List[Character]):
+        SyncResource.__init__(self)
         self.characters = chs
 
     def grab(self) -> Iterable[Union[

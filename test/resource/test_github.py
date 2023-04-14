@@ -46,13 +46,28 @@ def custom_gchar_tree(custom_gchar):
         return custom_gchar.sync_tree()
 
 
+@pytest.fixture(scope='module')
+def custom_gchar_n(github_client):
+    return CustomGithubResource(
+        repo='narugo1992/gchar',
+        github_client=github_client,
+        add_version_attachment=False,
+    )
+
+
+@pytest.fixture(scope='module')
+def custom_gchar_n_tree(custom_gchar_n):
+    with disable_output():
+        return custom_gchar_n.sync_tree()
+
+
 @pytest.mark.unittest
 class TestResourceGithub:
     def test_basic_usage(self, narugo1992_gchar, narugo1992_gchar_tree):
         assert narugo1992_gchar.repo == 'narugo1992/gchar'
         assert narugo1992_gchar.add_version_attachment
 
-        assert narugo1992_gchar_tree.metadata == {}
+        assert narugo1992_gchar_tree.metadata == {'source': 'https://github.com/narugo1992/gchar'}
         assert narugo1992_gchar_tree.items['v0.0.6'].metadata == {
             "version": "v0.0.6",
             "title": "v0.0.6",
@@ -60,6 +75,10 @@ class TestResourceGithub:
         }
         assert 'gchar-0.0.6.tar.gz' in narugo1992_gchar_tree.items['v0.0.6'].items
         assert 'gchar-0.0.6-py3-none-any.whl' in narugo1992_gchar_tree.items['v0.0.6'].items
+        assert 'LATEST_RELEASE' in narugo1992_gchar_tree.items
+        assert 'LATEST_RELEASE_0' in narugo1992_gchar_tree.items
+        assert 'LATEST_RELEASE_0.0' in narugo1992_gchar_tree.items
+        assert 'LATEST_RELEASE_0.0.6' in narugo1992_gchar_tree.items
 
     def test_init_warn(self, github_client, github_access_token):
         with pytest.warns(Warning):
@@ -69,7 +88,7 @@ class TestResourceGithub:
         assert custom_gchar.repo == 'narugo1992/gchar'
         assert custom_gchar.add_version_attachment
 
-        assert custom_gchar_tree.metadata == {}
+        assert custom_gchar_tree.metadata == {'source': 'https://github.com/narugo1992/gchar'}
         assert 'v0.0.6' not in custom_gchar_tree.items
         assert 'v0.0.2' not in custom_gchar_tree.items
         assert custom_gchar_tree.items['v0.0.1'].metadata == {
@@ -79,3 +98,30 @@ class TestResourceGithub:
         }
         assert 'gchar-0.0.1.tar.gz' not in custom_gchar_tree.items['v0.0.1'].items
         assert 'gchar-0.0.1-py3-none-any.whl' in custom_gchar_tree.items['v0.0.1'].items
+
+        assert 'LATEST_RELEASE' in custom_gchar_tree.items
+        assert 'LATEST_RELEASE_0' in custom_gchar_tree.items
+        assert 'LATEST_RELEASE_0.0' in custom_gchar_tree.items
+        assert 'LATEST_RELEASE_0.0.1' in custom_gchar_tree.items
+        assert 'LATEST_RELEASE_0.0.6' not in custom_gchar_tree.items
+
+    def test_custom_usage_n(self, custom_gchar_n, custom_gchar_n_tree):
+        assert custom_gchar_n.repo == 'narugo1992/gchar'
+        assert not custom_gchar_n.add_version_attachment
+
+        assert custom_gchar_n_tree.metadata == {'source': 'https://github.com/narugo1992/gchar'}
+        assert 'v0.0.6' not in custom_gchar_n_tree.items
+        assert 'v0.0.2' not in custom_gchar_n_tree.items
+        assert custom_gchar_n_tree.items['v0.0.1'].metadata == {
+            "version": "v0.0.1",
+            "title": "v0.0.1",
+            "url": "https://github.com/narugo1992/gchar/releases/tag/v0.0.1",
+        }
+        assert 'gchar-0.0.1.tar.gz' not in custom_gchar_n_tree.items['v0.0.1'].items
+        assert 'gchar-0.0.1-py3-none-any.whl' in custom_gchar_n_tree.items['v0.0.1'].items
+
+        assert 'LATEST_RELEASE' not in custom_gchar_n_tree.items
+        assert 'LATEST_RELEASE_0' not in custom_gchar_n_tree.items
+        assert 'LATEST_RELEASE_0.0' not in custom_gchar_n_tree.items
+        assert 'LATEST_RELEASE_0.0.1' not in custom_gchar_n_tree.items
+        assert 'LATEST_RELEASE_0.0.6' not in custom_gchar_n_tree.items

@@ -11,6 +11,8 @@ from hfmirror.utils import TargetPathType
 
 class ArknightsSkinResource(SyncResource):
     def __init__(self, chs: List[Character]):
+        SyncResource.__init__(self)
+        SyncResource.__init__(self)
         self.characters = chs
 
     def grab(self) -> Iterable[Union[

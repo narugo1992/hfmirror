@@ -1,11 +1,11 @@
 import io
 import warnings
 from operator import itemgetter
-from typing import Tuple, List, Mapping, Any, Iterable, Union, Dict
+from typing import Tuple, List, Mapping, Any, Iterable, Union, Dict, Callable
 
 from hbutils.string.tree import format_tree
 
-from .item import create_sync_item, SyncItem, _PRESERVED_NAMES
+from .item import create_sync_item, SyncItem, _PRESERVED_NAMES, _REGISTERED_SYNC_TYPES
 from ..utils import hash_anything, to_segments, TargetPathType, text_concat, text_parallel
 
 
@@ -130,11 +130,22 @@ SyncItemType = Union[SyncItem, MetadataItem]
 
 
 class SyncResource:
+    def __init__(self):
+        self._registered_ops: Dict[str, Callable] = {}
+
     def grab(self) -> Iterable[Union[
         Tuple[str, Any, TargetPathType, Mapping],
         Tuple[str, Any, TargetPathType],
     ]]:
         raise NotImplementedError  # pragma: no cover
+
+    def register_operation(self, name: str, func: Callable):
+        if name in _PRESERVED_NAMES or name in _REGISTERED_SYNC_TYPES:
+            raise KeyError(f'Operation name {name!r} has already been preserved or registered as a sync item.')
+        elif name not in self._registered_ops:
+            self._registered_ops[name] = func
+        else:
+            raise KeyError(f'Operation {name} has already been registered.')
 
     def iter_sync_items(self) -> Iterable[SyncItemType]:
         for tpl in self.grab():
@@ -158,6 +169,8 @@ class SyncResource:
                     else:
                         assert False, f'Undefined preserved operation - {type_!r}, ' \
                                       f'please notice the author about this.'  # pragma: no cover
+                elif type_ in self._registered_ops:
+                    self._registered_ops[type_](value, segments, attached_data)
                 else:
                     yield create_sync_item(type_, value, attached_data, segments)
 
