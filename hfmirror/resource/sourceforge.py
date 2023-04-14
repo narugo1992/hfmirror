@@ -52,7 +52,8 @@ class SourceForgeFilesResource(VersionBasedResource):
         VersionBasedResource.__init__(self, add_version_attachment)
         self.project_name = project_name
         self.subdir = to_segments(subdir)
-        self.root_url = f"https://sourceforge.net/projects/{project_name}/files/{'/'.join(map(quote, self.subdir))}"
+        self.root_url = f"https://sourceforge.net/projects/" \
+                        f"{quote(project_name)}/files/{'/'.join(map(quote, self.subdir))}"
 
     def _process_segments(self, type_, segments) -> Optional[List[str]]:
         _ = type_, segments
@@ -84,6 +85,6 @@ class SourceForgeFilesResource(VersionBasedResource):
                 yield 'version', version, segments
 
             if type_ == 'file':
-                yield 'wget_remote', download_url, segments
+                yield 'wget', download_url, segments
             else:  # directory
                 yield 'metadata', {'page_url': download_url}, segments
