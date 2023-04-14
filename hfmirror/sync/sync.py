@@ -1,5 +1,6 @@
 import json
 import os.path
+from itertools import chain
 from typing import List, Tuple
 
 from hbutils.reflection import nested_with
@@ -46,8 +47,10 @@ class SyncTask:
         if self.storage.file_exists(meta_file_segments):
             old_metadata = json.loads(self.storage.read_text(meta_file_segments))
             old_files = {item['name']: item for item in old_metadata['files']}
+            old_item_names = {item['name'] for item in chain(old_metadata['files'], old_metadata['folders'])}
         else:
             old_files = {}
+            old_item_names = set()
 
         m_folders = []
         for key, folder in folders:
@@ -92,10 +95,13 @@ class SyncTask:
                     'folders': m_folders,
                 }, f, indent=4, ensure_ascii=False)
 
+            new_item_names = {item['name'] for item in chain(m_files, m_folders)}
             with nested_with(*[item.load_file() for _, item in need_load_files]) as file_paths:
-                changes = [(local_metafile, [*segments, self.meta_filename])]
-                for local_file, (key, _) in zip(file_paths, need_load_files):
+                changes = [(local_metafile, [*segments, self.meta_filename])]  # .meta.json
+                for local_file, (key, _) in zip(file_paths, need_load_files):  # items to add
                     changes.append((local_file, [*segments, key]))
+                for key in sorted(old_item_names - new_item_names):  # items to delete
+                    changes.append((None, [*segments, key]))
 
                 self.storage.batch_change_files(changes)
 

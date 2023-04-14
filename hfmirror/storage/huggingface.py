@@ -72,6 +72,9 @@ def hf_local_upload_check(uploads: List[Tuple[Optional[str], str]],
                 else:  # not lfs
                     is_lfs, oid, filesize = False, f_meta['oid'], f_meta['size']
 
+                if f_meta['type'] != 'file':
+                    raise FileExistsError(f'Path {f_meta["path"]!r} is a directory on huggingface, '
+                                          f'unable to replace it with local file {f_in_local}.')
                 _is_duplicated = _single_resource_is_duplicated(f_in_local, is_lfs, oid, filesize, chunk_for_hash)
                 checks.append(not _is_duplicated)  # exist, need to upload if not the same
             else:  # going to delete
