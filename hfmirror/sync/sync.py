@@ -59,7 +59,7 @@ class SyncTask:
 
         m_files = []
         need_load_files = []
-        for key, item in items:
+        for key, item in tqdm(items, desc=f"Mark for {'/'.join(segments)}"):
             old_file_data = old_files.get(key)
             if old_file_data and old_file_data['type'] == item.__type__:
                 try:

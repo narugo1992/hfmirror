@@ -53,9 +53,12 @@ class RemoteSyncItem(SyncItem):
         self.url = url
         self._session = None
 
+    def get_new_session(self):
+        return get_requests_session(headers=self.__headers__)
+
     def _get_session(self) -> requests.Session:
         if self._session is None:
-            self._session = get_requests_session(headers=self.__headers__)
+            self._session = self.get_new_session()
 
         return self._session
 
@@ -66,7 +69,7 @@ class RemoteSyncItem(SyncItem):
     def load_file(self) -> ContextManager[str]:
         with TemporaryDirectory() as td:
             filename = os.path.join(td, urlsplit(self.url).filename or 'unnamed_file')
-            download_file(self.url, filename, session=self._session)
+            download_file(self.url, filename, session=self._get_session())
             self._file_process(filename)
             yield filename
 
@@ -79,16 +82,14 @@ class RemoteSyncItem(SyncItem):
                 raise ResourceNotChange
 
             etag = mark.get('etag')
-            resp = srequest(
-                self._get_session(), 'HEAD', self.url,
-                allow_redirects=True, headers={'If-None-Match': etag} if etag else {}
-            )
+            headers = {'If-None-Match': etag} if etag else {}
         else:
-            resp = srequest(
-                self._get_session(), 'HEAD', self.url,
-                allow_redirects=True, headers={}
-            )
+            headers = {}
 
+        resp = srequest(
+            self._get_session(), 'HEAD', self.url,
+            allow_redirects=True, headers=headers,
+        )
         if resp.status_code == 304:
             raise ResourceNotChange
 
