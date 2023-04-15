@@ -47,6 +47,9 @@ def hf_local_upload_check(uploads: List[Tuple[Optional[str], str]],
     :param session: Session of requests, will be auto created when not given.
     :return: Uploads are necessary or not, in form of lists of boolean.
     """
+    if not uploads:
+        return []
+
     session = session or get_requests_session()
     files_in_repo = [f for _, f in uploads]
     resp = srequest(
