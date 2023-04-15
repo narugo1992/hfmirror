@@ -11,7 +11,7 @@ from hbutils.system.filesystem.tempfile import TemporaryDirectory
 from hbutils.system.network import urlsplit
 
 from ..utils import download_file, srequest, get_requests_session, hash_anything
-
+from imgutils.tagging import get_wd14_tags
 
 class ResourceNotChange(Exception):
     pass
@@ -39,7 +39,7 @@ class SyncItem(metaclass=abc.ABCMeta):
             return True
         elif isinstance(self, type(other)) and isinstance(other, type(self)):
             return (self._value, self.metadata, self.segments) == \
-                   (other._value, other.metadata, other.segments)
+                (other._value, other.metadata, other.segments)
         else:
             return False
 
@@ -47,6 +47,7 @@ class SyncItem(metaclass=abc.ABCMeta):
 class RemoteSyncItem(SyncItem):
     __type__ = 'remote'
     __headers__ = {}
+    __request_kwargs__ = {}
 
     def __init__(self, url, metadata, segments: List[str]):
         SyncItem.__init__(self, url, metadata, segments)
@@ -69,7 +70,7 @@ class RemoteSyncItem(SyncItem):
     def load_file(self) -> ContextManager[str]:
         with TemporaryDirectory() as td:
             filename = os.path.join(td, urlsplit(self.url).filename or 'unnamed_file')
-            download_file(self.url, filename, session=self._get_session())
+            download_file(self.url, filename, session=self._get_session(), **self.__request_kwargs__)
             self._file_process(filename)
             yield filename
 
@@ -86,9 +87,15 @@ class RemoteSyncItem(SyncItem):
         else:
             headers = {}
 
+        kwargs = self.__request_kwargs__.copy()
+        if 'headers' in kwargs:
+            headers.update(kwargs['headers'])
+            kwargs.pop('headers')
+
         resp = srequest(
             self._get_session(), 'HEAD', self.url,
             allow_redirects=True, headers=headers,
+            **kwargs
         )
         if resp.status_code == 304:
             raise ResourceNotChange

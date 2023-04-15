@@ -6,9 +6,9 @@ from tqdm.auto import tqdm
 from .session import get_requests_session, srequest
 
 
-def download_file(url, filename, expected_size: int = None, desc=None, session=None):
+def download_file(url, filename, expected_size: int = None, desc=None, session=None, **kwargs):
     session = session or get_requests_session()
-    response = srequest(session, 'GET', url, stream=True, allow_redirects=True)
+    response = srequest(session, 'GET', url, stream=True, allow_redirects=True, **kwargs)
     expected_size = expected_size or response.headers.get('Content-Length', None)
     expected_size = int(expected_size) if expected_size is not None else expected_size
 
