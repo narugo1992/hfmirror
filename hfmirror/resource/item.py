@@ -11,7 +11,7 @@ from hbutils.system.filesystem.tempfile import TemporaryDirectory
 from hbutils.system.network import urlsplit
 
 from ..utils import download_file, srequest, get_requests_session, hash_anything
-from imgutils.tagging import get_wd14_tags
+
 
 class ResourceNotChange(Exception):
     pass
