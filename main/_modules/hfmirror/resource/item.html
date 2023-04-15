@@ -214,9 +214,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">url</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="o">=</span> <span class="kc">None</span></div>
 
+    <span class="k">def</span> <span class="nf">get_new_session</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">get_requests_session</span><span class="p">(</span><span class="n">headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__headers__</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">_get_session</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">requests</span><span class="o">.</span><span class="n">Session</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="o">=</span> <span class="n">get_requests_session</span><span class="p">(</span><span class="n">headers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__headers__</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_new_session</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span>
 
@@ -227,7 +230,7 @@
     <span class="k">def</span> <span class="nf">load_file</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ContextManager</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="k">with</span> <span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">td</span><span class="p">:</span>
             <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">td</span><span class="p">,</span> <span class="n">urlsplit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">filename</span> <span class="ow">or</span> <span class="s1">&#39;unnamed_file&#39;</span><span class="p">)</span>
-            <span class="n">download_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="p">)</span>
+            <span class="n">download_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_session</span><span class="p">())</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_file_process</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
             <span class="k">yield</span> <span class="n">filename</span>
 
@@ -240,16 +243,14 @@
                 <span class="k">raise</span> <span class="n">ResourceNotChange</span>
 
             <span class="n">etag</span> <span class="o">=</span> <span class="n">mark</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;etag&#39;</span><span class="p">)</span>
-            <span class="n">resp</span> <span class="o">=</span> <span class="n">srequest</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_get_session</span><span class="p">(),</span> <span class="s1">&#39;HEAD&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
-                <span class="n">allow_redirects</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;If-None-Match&#39;</span><span class="p">:</span> <span class="n">etag</span><span class="p">}</span> <span class="k">if</span> <span class="n">etag</span> <span class="k">else</span> <span class="p">{}</span>
-            <span class="p">)</span>
+            <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;If-None-Match&#39;</span><span class="p">:</span> <span class="n">etag</span><span class="p">}</span> <span class="k">if</span> <span class="n">etag</span> <span class="k">else</span> <span class="p">{}</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">resp</span> <span class="o">=</span> <span class="n">srequest</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_get_session</span><span class="p">(),</span> <span class="s1">&#39;HEAD&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
-                <span class="n">allow_redirects</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="p">{}</span>
-            <span class="p">)</span>
+            <span class="n">headers</span> <span class="o">=</span> <span class="p">{}</span>
 
+        <span class="n">resp</span> <span class="o">=</span> <span class="n">srequest</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_session</span><span class="p">(),</span> <span class="s1">&#39;HEAD&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">allow_redirects</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">304</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ResourceNotChange</span>
 
