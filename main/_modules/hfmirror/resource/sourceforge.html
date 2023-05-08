@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>hfmirror.resource.sourceforge &mdash; hfmirror 0.0.4 documentation</title>
+  <title>hfmirror.resource.sourceforge &mdash; hfmirror 0.0.5 documentation</title>
   
 
   
@@ -59,7 +59,7 @@
             
             
               <div class="version">
-                0.0.4
+                0.0.5
               </div>
             
           
@@ -241,14 +241,14 @@
         <span class="k">yield</span> <span class="s1">&#39;metadata&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;source&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_url</span><span class="p">},</span> <span class="s1">&#39;&#39;</span>
         <span class="n">session</span> <span class="o">=</span> <span class="n">get_requests_session</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">type_</span><span class="p">,</span> <span class="n">segments</span><span class="p">,</span> <span class="n">download_url</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_walk_on_sourceforge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_url</span><span class="p">,</span> <span class="p">[],</span> <span class="n">session</span><span class="p">):</span>
-            <span class="n">version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_version</span><span class="p">(</span><span class="n">type_</span><span class="p">,</span> <span class="n">segments</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="s1">&#39;version&#39;</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">segments</span>
-
             <span class="k">if</span> <span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;file&#39;</span><span class="p">:</span>
                 <span class="k">yield</span> <span class="s1">&#39;wget&#39;</span><span class="p">,</span> <span class="n">download_url</span><span class="p">,</span> <span class="n">segments</span>
             <span class="k">else</span><span class="p">:</span>  <span class="c1"># directory</span>
-                <span class="k">yield</span> <span class="s1">&#39;metadata&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;page_url&#39;</span><span class="p">:</span> <span class="n">download_url</span><span class="p">},</span> <span class="n">segments</span></div>
+                <span class="k">yield</span> <span class="s1">&#39;metadata&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;page_url&#39;</span><span class="p">:</span> <span class="n">download_url</span><span class="p">},</span> <span class="n">segments</span>
+
+            <span class="n">version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_version</span><span class="p">(</span><span class="n">type_</span><span class="p">,</span> <span class="n">segments</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="s1">&#39;version&#39;</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">segments</span></div>
 </pre></div>
 
 
