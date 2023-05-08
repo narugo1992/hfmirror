@@ -162,13 +162,22 @@
 <span></span><span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span><span class="p">,</span> <span class="n">lru_cache</span>
 <span class="kn">from</span> <span class="nn">hashlib</span> <span class="kn">import</span> <span class="n">sha256</span><span class="p">,</span> <span class="n">sha1</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span>
 
-<span class="kn">from</span> <span class="nn">huggingface_hub</span> <span class="kn">import</span> <span class="n">HfApi</span><span class="p">,</span> <span class="n">hf_hub_url</span><span class="p">,</span> <span class="n">CommitOperationAdd</span><span class="p">,</span> <span class="n">CommitOperationDelete</span>
+<span class="kn">from</span> <span class="nn">huggingface_hub</span> <span class="kn">import</span> <span class="n">HfApi</span><span class="p">,</span> <span class="n">hf_hub_url</span><span class="p">,</span> <span class="n">CommitOperationAdd</span><span class="p">,</span> <span class="n">CommitOperationDelete</span><span class="p">,</span> <span class="n">configure_http_backend</span>
 
 <span class="kn">from</span> <span class="nn">.base</span> <span class="kn">import</span> <span class="n">BaseStorage</span>
 <span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">to_segments</span><span class="p">,</span> <span class="n">srequest</span><span class="p">,</span> <span class="n">get_requests_session</span>
+
+<span class="n">DEFAULT_TIMEOUT</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span>
+
+
+<span class="nd">@lru_cache</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">_register_session_for_hf</span><span class="p">(</span><span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span>
+                             <span class="n">headers</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="n">configure_http_backend</span><span class="p">(</span><span class="n">backend_factory</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span><span class="n">get_requests_session</span><span class="p">,</span> <span class="n">max_retries</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">headers</span><span class="p">))</span>
 
 
 <span class="k">def</span> <span class="nf">_single_resource_is_duplicated</span><span class="p">(</span><span class="n">local_filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">is_lfs</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filesize</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -286,6 +295,8 @@
         <span class="k">return</span> <span class="n">srequest</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="p">,</span> <span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_url</span><span class="p">(</span><span class="n">file</span><span class="p">))</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="n">encoding</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">batch_change_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">changes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]):</span>
+        <span class="n">_register_session_for_hf</span><span class="p">()</span>
+
         <span class="n">_map_changes</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">local_filename</span><span class="p">,</span> <span class="n">file_in_repo</span> <span class="ow">in</span> <span class="n">changes</span><span class="p">:</span>
             <span class="n">sg</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">file_in_repo</span><span class="p">)</span>
