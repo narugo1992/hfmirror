@@ -26,19 +26,10 @@ class TestResourceSourceforge:
         tree = resource.sync_tree()
         assert 'LATEST_RELEASE' in tree.items
         assert 'LATEST_RELEASE_10' in tree.items
-        assert 'LATEST_RELEASE_10.8.1' in tree.items
         assert 'LATEST_RELEASE_10.9.0' in tree.items
         assert 'LATEST_RELEASE_10.9.1' not in tree.items
 
-        assert tree.items['LATEST_RELEASE_10.8'].content == 'checkstyle-10.8.1'
         assert tree.items['LATEST_RELEASE_10.9'].content == 'checkstyle-10.9.0'
-        assert tree.items['checkstyle-10.8.1'].items['README.md'].refresh_mark(None) == {
-            "url": "https://downloads.sourceforge.net/project/checkstyle.mirror/checkstyle-10.8.1/README.md",
-            "etag": "\"6409e1c6-3e6\"",
-            "expires": None,
-            "content_length": 998,
-            "content_type": "application/octet-stream"
-        }
         assert tree.items['checkstyle-10.9.0'].items['README.md'].refresh_mark(None) == {
             "url": "https://downloads.sourceforge.net/project/checkstyle.mirror/checkstyle-10.9.0/README.md",
             "etag": "\"6413020d-2a9\"",
@@ -61,19 +52,11 @@ class TestResourceSourceforge:
         print(tree.items)
         assert 'LATEST_RELEASE' not in tree.items
         assert 'LATEST_RELEASE_10' not in tree.items
-        assert 'LATEST_RELEASE_10.8.1' not in tree.items
         assert 'LATEST_RELEASE_10.9.0' not in tree.items
         assert 'LATEST_RELEASE_10.9.1' not in tree.items
         assert 'LATEST_RELEASE_10.9.2' not in tree.items
         assert 'LATEST_RELEASE_10.9.3' not in tree.items
 
-        assert tree.items['checkstyle-10.8.1'].items['README.md'].refresh_mark(None) == {
-            "url": "https://downloads.sourceforge.net/project/checkstyle.mirror/checkstyle-10.8.1/README.md",
-            "etag": "\"6409e1c6-3e6\"",
-            "expires": None,
-            "content_length": 998,
-            "content_type": "application/octet-stream"
-        }
         assert tree.items['checkstyle-10.9.0'].items['README.md'].refresh_mark(None) == {
             "url": "https://downloads.sourceforge.net/project/checkstyle.mirror/checkstyle-10.9.0/README.md",
             "etag": "\"6413020d-2a9\"",

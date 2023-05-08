@@ -1,13 +1,22 @@
 import datetime
 import os
 import warnings
+from functools import partial, lru_cache
 from hashlib import sha256, sha1
-from typing import List, Tuple, Optional, Union
+from typing import List, Tuple, Optional, Union, Dict
 
-from huggingface_hub import HfApi, hf_hub_url, CommitOperationAdd, CommitOperationDelete
+from huggingface_hub import HfApi, hf_hub_url, CommitOperationAdd, CommitOperationDelete, configure_http_backend
 
 from .base import BaseStorage
 from ..utils import to_segments, srequest, get_requests_session
+
+DEFAULT_TIMEOUT: int = 10
+
+
+@lru_cache()
+def _register_session_for_hf(max_retries: int = 5, timeout: int = DEFAULT_TIMEOUT,
+                             headers: Optional[Dict[str, str]] = None):
+    configure_http_backend(backend_factory=partial(get_requests_session, max_retries, timeout, headers))
 
 
 def _single_resource_is_duplicated(local_filename: str, is_lfs: bool, oid: str, filesize: int,
@@ -125,6 +134,8 @@ class HuggingfaceStorage(BaseStorage):
         return srequest(self.session, 'GET', self._file_url(file)).content.decode(encoding=encoding)
 
     def batch_change_files(self, changes: List[Tuple[Optional[str], List[str]]]):
+        _register_session_for_hf()
+
         _map_changes = {}
         for local_filename, file_in_repo in changes:
             sg = tuple(file_in_repo)
