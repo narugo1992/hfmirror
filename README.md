@@ -25,7 +25,7 @@ Mirror for resources to local and huggingface.
 You can simply install it with `pip` command line from the official PyPI site.
 
 ```bash
-pip install hbutils
+pip install hfmirror
 ```
 
 For more information about installation, you can refer to [Installation](https://narugo1992.github.io/hfmirror/main/tutorials/installation/index.html).
