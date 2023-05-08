@@ -48,9 +48,7 @@ class GithubReleaseResource(VersionBasedResource):
             if not tag_name:
                 continue
 
-            yield 'version', tag_name, tag_name
-            release_metadata = {'version': release.tag_name, 'title': release.title, 'url': release.html_url}
-            yield 'metadata', release_metadata, tag_name
+            has_file = False
             for asset in release.get_assets():
                 filename = self._filename_filter(tag_name, asset.name)
                 if not filename:
@@ -59,3 +57,9 @@ class GithubReleaseResource(VersionBasedResource):
                 download_url = asset.browser_download_url
                 metadata = {'tag': release.tag_name, 'filename': asset.name}
                 yield 'remote', download_url, f'{tag_name}/{filename}', metadata
+                has_file = True
+
+            if has_file:
+                yield 'version', tag_name, tag_name
+                release_metadata = {'version': release.tag_name, 'title': release.title, 'url': release.html_url}
+                yield 'metadata', release_metadata, tag_name

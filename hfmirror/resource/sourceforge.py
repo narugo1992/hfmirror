@@ -80,11 +80,11 @@ class SourceForgeFilesResource(VersionBasedResource):
         yield 'metadata', {'source': self.root_url}, ''
         session = get_requests_session()
         for type_, segments, download_url in self._walk_on_sourceforge(self.root_url, [], session):
-            version = self._get_version(type_, segments)
-            if version is not None:
-                yield 'version', version, segments
-
             if type_ == 'file':
                 yield 'wget', download_url, segments
             else:  # directory
                 yield 'metadata', {'page_url': download_url}, segments
+
+            version = self._get_version(type_, segments)
+            if version is not None:
+                yield 'version', version, segments
