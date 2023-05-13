@@ -21,7 +21,7 @@ class CustomMirrorResource(SourceForgeFilesResource):
 
 @pytest.mark.unittest
 class TestResourceSourceforge:
-    def test_mirror_resource(self):
+    def test_mirror_resource(self, etag_anything):
         resource = CustomMirrorResource('dghs-imgutils')
         tree = resource.sync_tree()
         assert 'LATEST_RELEASE' in tree.items
@@ -33,7 +33,7 @@ class TestResourceSourceforge:
         assert tree.items['LATEST_RELEASE_0'].content != 'v0.0.3'
         assert tree.items['v0.0.2'].items['README.md'].refresh_mark(None) == {
             'url': 'https://downloads.sourceforge.net/project/dghs-imgutils/v0.0.2/README.md',
-            'etag': '"6451fdc9-12f"',
+            'etag': etag_anything,
             'expires': None,
             'content_length': 303,
             'content_type': 'application/octet-stream'
@@ -41,13 +41,13 @@ class TestResourceSourceforge:
         assert tree.items['v0.0.2'].items['dghs_imgutils-0.0.2-py3-none-any.whl'].refresh_mark(None) == {
             'url': 'https://downloads.sourceforge.net/project/dghs-imgutils/'
                    'v0.0.2/dghs_imgutils-0.0.2-py3-none-any.whl',
-            'etag': '"a6d5-5fac4274635c0"',
+            'etag': etag_anything,
             'expires': None,
             'content_length': 42709,
             'content_type': 'application/octet-stream'
         }
 
-    def test_native(self):
+    def test_native(self, etag_anything):
         resource = SourceForgeFilesResource('dghs-imgutils')
         tree = resource.sync_tree()
         assert 'LATEST_RELEASE' not in tree.items
@@ -58,7 +58,7 @@ class TestResourceSourceforge:
 
         assert tree.items['v0.0.2'].items['README.md'].refresh_mark(None) == {
             'url': 'https://downloads.sourceforge.net/project/dghs-imgutils/v0.0.2/README.md',
-            'etag': '"6451fdc9-12f"',
+            'etag': etag_anything,
             'expires': None,
             'content_length': 303,
             'content_type': 'application/octet-stream'
@@ -66,7 +66,7 @@ class TestResourceSourceforge:
         assert tree.items['v0.0.2'].items['dghs_imgutils-0.0.2-py3-none-any.whl'].refresh_mark(None) == {
             'url': 'https://downloads.sourceforge.net/project/dghs-imgutils/'
                    'v0.0.2/dghs_imgutils-0.0.2-py3-none-any.whl',
-            'etag': '"a6d5-5fac4274635c0"',
+            'etag': etag_anything,
             'expires': None,
             'content_length': 42709,
             'content_type': 'application/octet-stream'
