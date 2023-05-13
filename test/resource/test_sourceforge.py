@@ -41,7 +41,7 @@ class TestResourceSourceforge:
         assert tree.items['v0.0.2'].items['dghs_imgutils-0.0.2-py3-none-any.whl'].refresh_mark(None) == {
             'url': 'https://downloads.sourceforge.net/project/dghs-imgutils/'
                    'v0.0.2/dghs_imgutils-0.0.2-py3-none-any.whl',
-            'etag': '"6451fedf-a6d5"',
+            'etag': '"a6d5-5fac4274635c0"',
             'expires': None,
             'content_length': 42709,
             'content_type': 'application/octet-stream'
@@ -66,7 +66,7 @@ class TestResourceSourceforge:
         assert tree.items['v0.0.2'].items['dghs_imgutils-0.0.2-py3-none-any.whl'].refresh_mark(None) == {
             'url': 'https://downloads.sourceforge.net/project/dghs-imgutils/'
                    'v0.0.2/dghs_imgutils-0.0.2-py3-none-any.whl',
-            'etag': '"6451fedf-a6d5"',
+            'etag': '"a6d5-5fac4274635c0"',
             'expires': None,
             'content_length': 42709,
             'content_type': 'application/octet-stream'
