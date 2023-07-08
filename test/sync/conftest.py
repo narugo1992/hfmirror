@@ -46,3 +46,9 @@ class ArknightsSkinResource(SyncResource):
 def arknights_sync():
     chs = [ch for ch in Character.all(contains_extra=False) if ch.rarity == 3 and ch.gender == 'male'][:3]
     return ArknightsSkinResource(chs)
+
+
+@pytest.fixture(scope='module')
+def arknights_sync_large():
+    chs = [ch for ch in Character.all(contains_extra=False) if ch.rarity == 3]
+    return ArknightsSkinResource(chs)

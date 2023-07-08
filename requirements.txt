@@ -4,4 +4,4 @@ click>=7.0.0
 requests
 pyquery
 pygithub
-huggingface_hub
+huggingface_hub>=0.14.0
