@@ -29,7 +29,7 @@ def _count_trees(tree: SyncTree):
 
 class SyncTask:
     def __init__(self, resource: SyncResource, storage: BaseStorage, meta_filename='.meta.json',
-                 batch: int = 0):
+                 batch: int = 50):
         self.resource = resource
         self.storage = storage
         self.meta_filename = meta_filename
