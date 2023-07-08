@@ -39,7 +39,8 @@ class SyncTask:
         # batch > 0, submit changes when changes over `batch`
         self.batch = batch
 
-    def _sync_tree(self, tree: SyncTree, segments: List[str], tqdms: Tuple[_TqdmType, _TqdmType]):
+    def _sync_tree(self, tree: SyncTree, segments: List[str], tqdms: Tuple[_TqdmType, _TqdmType],
+                   preserved: Tuple[FilePool, List]):
         tree_tqdm, file_tqdm = tqdms
         tree_tqdm.set_description('/'.join(segments))
         items, folders = [], []
@@ -61,7 +62,7 @@ class SyncTask:
 
         m_folders = []
         for key, folder in folders:
-            self._sync_tree(folder, [*segments, key], tqdms)
+            self._sync_tree(folder, [*segments, key], tqdms, preserved)
             m_folders.append({'name': key, 'metadata': folder.metadata})
 
         m_files = []
@@ -92,7 +93,7 @@ class SyncTask:
                 'metadata': item.metadata,
             })
 
-        file_pool, preserved_changes = FilePool(), []
+        file_pool, preserved_changes = preserved
         with TemporaryDirectory() as td:
             local_metafile = os.path.join(td, self.meta_filename)
             with open(local_metafile, 'w', encoding='utf-8') as f:
@@ -133,6 +134,12 @@ class SyncTask:
     def sync(self):
         tree: SyncTree = self.resource.sync_tree()
         total_trees, total_files = _count_trees(tree)
+
         tree_tqdm = tqdm(total=total_trees)
         file_tqdm = tqdm(total=total_files)
-        self._sync_tree(tree, [], (tree_tqdm, file_tqdm))
+        file_pool, preserved_changes = FilePool(), []
+        self._sync_tree(tree, [], (tree_tqdm, file_tqdm), (file_pool, preserved_changes))
+        if preserved_changes:
+            self.storage.batch_change_files(preserved_changes)
+            preserved_changes.clear()
+            file_pool.cleanup()
