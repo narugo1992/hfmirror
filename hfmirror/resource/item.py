@@ -156,6 +156,18 @@ class TextOutputSyncItem(SyncItem):
         return f'<{self.__class__.__name__} content: {truncate(self.content, tail_length=15, show_length=True)!r}>'
 
 
+class LocalFileSyncItem(SyncItem):
+    __type__ = 'local'
+
+    def __init__(self, filename, metadata, segments):
+        SyncItem.__init__(self, filename, metadata, segments)
+        self.filename = filename
+
+    @contextmanager
+    def load_file(self) -> ContextManager[str]:
+        yield self.filename
+
+
 _PRESERVED_NAMES = {'metadata'}
 _REGISTERED_SYNC_TYPES: Dict[str, Type[SyncItem]] = {}
 
@@ -175,6 +187,7 @@ def register_sync_type(clazz: Type[SyncItem]):
 register_sync_type(RemoteSyncItem)
 register_sync_type(CustomSyncItem)
 register_sync_type(TextOutputSyncItem)
+register_sync_type(LocalFileSyncItem)
 
 
 def create_sync_item(type_: str, value: Any, metadata: dict, segments: List[str]) -> SyncItem:

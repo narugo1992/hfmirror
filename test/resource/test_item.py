@@ -12,7 +12,7 @@ from hbutils.collection.recover import _OriginType, register_recovery
 from hbutils.system import TemporaryDirectory
 
 from hfmirror.resource import RemoteSyncItem, ResourceNotChange, TextOutputSyncItem, CustomSyncItem
-from hfmirror.resource.item import register_sync_type, SyncItem, create_sync_item
+from hfmirror.resource.item import register_sync_type, SyncItem, create_sync_item, LocalFileSyncItem
 
 
 @pytest.fixture()
@@ -181,6 +181,15 @@ class TestResourceItem:
         assert item != CustomSyncItem(show_sys, {'sy': platform.system()}, ['sys', 'v'])
         assert item != CustomSyncItem(lambda: None, {'sys': platform.system()}, ['sys', 'v'])
         assert item != RemoteSyncItem(show_sys, {'sys': platform.system()}, ['sys', 'v'])
+
+    def test_local_file_sync_item(self):
+        item = LocalFileSyncItem('file1.txt', {'sys': platform.system()}, ['sys', 'v'])
+        assert item.filename == 'file1.txt'
+        assert item.metadata == {'sys': platform.system()}
+        assert item.segments == ['sys', 'v']
+
+        with item.load_file() as file:
+            assert file == 'file1.txt'
 
     def test_register_custom(self):
         register_sync_type(SysSyncItem)
