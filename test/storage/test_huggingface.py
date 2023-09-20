@@ -13,10 +13,11 @@ from ..testing import TESTFILE_DIR, isolated_to_testfile
 def repo_like_testfile(huggingface_repo, huggingface_client):
     operations = []
     for item in os.listdir(TESTFILE_DIR):
-        operations.append(CommitOperationAdd(
-            path_in_repo=item,
-            path_or_fileobj=os.path.join(TESTFILE_DIR, item),
-        ))
+        if os.path.isfile(os.path.join(TESTFILE_DIR, item)):
+            operations.append(CommitOperationAdd(
+                path_in_repo=item,
+                path_or_fileobj=os.path.join(TESTFILE_DIR, item),
+            ))
 
     huggingface_client.create_commit(
         huggingface_repo, operations,
